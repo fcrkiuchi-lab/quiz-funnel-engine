@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="3つの点数から割合を表示するウェルネス情報ツール">
+    <title>ドーシャ割合チェック</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="config.js" defer></script>
+    <script src="calculator.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="card" aria-labelledby="page-title">
+        <header class="intro">
+          <p class="eyebrow">ウェルネスチェック</p>
+          <h1 id="page-title">ドーシャ割合チェック</h1>
+          <p>ヴァータ、ピッタ、カパの点数を入力すると、構成割合と最も高いタイプを表示します。</p>
+        </header>
+
+        <form id="dosha-form" novalidate>
+          <div class="score-grid">
+            <label>
+              <span>ヴァータ</span>
+              <input id="vata" name="vata" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" required>
+            </label>
+            <label>
+              <span>ピッタ</span>
+              <input id="pitta" name="pitta" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" required>
+            </label>
+            <label>
+              <span>カパ</span>
+              <input id="kapha" name="kapha" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" required>
+            </label>
+          </div>
+
+          <p id="form-error" class="error-message" role="alert" hidden></p>
+          <button type="submit">割合を確認する</button>
+        </form>
+      </section>
+
+      <section id="result" class="card result-card" aria-labelledby="result-title" hidden>
+        <p class="eyebrow">結果</p>
+        <h2 id="result-title" tabindex="-1"></h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">項目</th>
+                <th scope="col">点数</th>
+                <th scope="col">割合</th>
+              </tr>
+            </thead>
+            <tbody id="result-rows"></tbody>
+          </table>
+        </div>
+
+        <p class="rounding-note">割合は小数第1位に丸めているため、表示上の合計が100.0%にならない場合があります。</p>
+
+        <section class="recommendation" aria-labelledby="recommendation-title">
+          <h3 id="recommendation-title">おすすめ商品</h3>
+          <div id="recommendation-content"></div>
+        </section>
+      </section>
+
+      <aside class="notice" aria-label="ご利用上の注意">
+        このチェックは医療診断ではなく、一般的なウェルネス情報を提供するものです。
+      </aside>
+    </main>
+  </body>
+</html>
