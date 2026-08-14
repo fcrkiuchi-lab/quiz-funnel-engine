@@ -3,51 +3,46 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="3つの点数から割合を表示するウェルネス情報ツール">
-    <title>ドーシャ割合チェック</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="calculator.js" defer></script>
-    <script src="app.js" defer></script>
+    <meta name="description" content="顧客別設定を差し替えて再利用できる診断Webアプリ">
+    <title>診断Webアプリ</title>
+    <link rel="stylesheet" href="diagnosis-template/styles.css">
+    <script src="diagnosis-template/config.js" defer></script>
+    <script src="diagnosis-template/engine.js" defer></script>
+    <script src="diagnosis-template/app.js" defer></script>
   </head>
   <body>
     <main class="page-shell">
-      <section class="card" aria-labelledby="page-title">
-        <header class="intro">
-          <p class="eyebrow">割合計算</p>
-          <h1 id="page-title">ドーシャ割合チェック</h1>
-          <p>ヴァータ、ピッタ、カパの点数を入力すると、各点数の構成割合を表示します。</p>
-        </header>
+      <section id="start-screen" class="card screen" aria-labelledby="page-title">
+        <p id="page-eyebrow" class="eyebrow">診断Webアプリ</p>
+        <h1 id="page-title">診断Webアプリ</h1>
+        <p id="page-description"></p>
+        <button id="start-button" type="button">診断をはじめる</button>
+      </section>
 
-        <form id="dosha-form" novalidate>
-          <div class="score-grid">
-            <label>
-              <span>ヴァータ</span>
-              <input id="vata" name="vata" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" required>
-            </label>
-            <label>
-              <span>ピッタ</span>
-              <input id="pitta" name="pitta" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" required>
-            </label>
-            <label>
-              <span>カパ</span>
-              <input id="kapha" name="kapha" type="number" min="0" step="1" inputmode="numeric" autocomplete="off" required>
-            </label>
-          </div>
-
+      <section id="question-screen" class="card screen" aria-labelledby="question-title" hidden>
+        <div class="progress-row">
+          <p id="progress-text" class="eyebrow"></p>
+          <progress id="progress-bar" max="1" value="0"></progress>
+        </div>
+        <form id="question-form" novalidate>
+          <fieldset id="question-fieldset"></fieldset>
           <p id="form-error" class="error-message" role="alert" hidden></p>
-          <button type="submit">割合を確認する</button>
+          <div class="button-row">
+            <button id="previous-button" class="secondary-button" type="button">前の質問へ</button>
+            <button id="next-button" type="submit">次の質問へ</button>
+          </div>
         </form>
       </section>
 
-      <section id="result" class="card result-card" aria-labelledby="result-title" hidden>
+      <section id="result-screen" class="card screen" aria-labelledby="result-title" hidden>
         <p class="eyebrow">結果</p>
-        <h2 id="result-title" tabindex="-1">計算結果</h2>
-
+        <h2 id="result-title" tabindex="-1">診断結果</h2>
+        <p id="result-description"></p>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th scope="col">項目</th>
+                <th scope="col">タイプ</th>
                 <th scope="col">点数</th>
                 <th scope="col">割合</th>
               </tr>
@@ -55,8 +50,9 @@
             <tbody id="result-rows"></tbody>
           </table>
         </div>
-
+        <div id="result-texts" class="result-texts"></div>
         <p class="rounding-note">割合は小数第1位に丸めているため、表示上の合計が100.0%にならない場合があります。</p>
+        <button id="restart-button" type="button">もう一度回答する</button>
       </section>
     </main>
   </body>

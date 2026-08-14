@@ -20,6 +20,28 @@
     if (!config || typeof config !== "object") {
       throw new Error("診断設定が必要です。");
     }
+
+    ["id", "title", "eyebrow", "description", "resultTitle", "resultDescription"].forEach(function validateTextProperty(propertyName) {
+      requireNonEmptyText(config[propertyName], "診断の" + propertyName + "を設定してください。");
+    });
+
+    if (!config.labels || typeof config.labels !== "object") {
+      throw new Error("操作ラベルを設定してください。");
+    }
+    ["start", "next", "previous", "finish", "restart"].forEach(function validateLabel(labelName) {
+      requireNonEmptyText(config.labels[labelName], "操作ラベルの" + labelName + "を設定してください。");
+    });
+
+    if (!config.theme || typeof config.theme !== "object") {
+      throw new Error("配色を設定してください。");
+    }
+    ["background", "surface", "primary", "primaryText", "accent", "text", "muted", "border"].forEach(function validateColor(colorName) {
+      const color = requireNonEmptyText(config.theme[colorName], "配色の" + colorName + "を設定してください。");
+      if (!/^#[0-9a-f]{6}$/i.test(color)) {
+        throw new Error("配色は6桁の16進カラーで設定してください。");
+      }
+    });
+
     if (!Array.isArray(config.axes) || config.axes.length === 0) {
       throw new Error("結果軸を1件以上設定してください。");
     }
@@ -28,6 +50,7 @@
     config.axes.forEach(function validateAxis(axis) {
       const key = requireNonEmptyText(axis && axis.key, "結果軸のキーが必要です。");
       requireNonEmptyText(axis.label, "結果軸の表示名が必要です。");
+      requireNonEmptyText(axis.resultText, "結果軸の説明文が必要です。");
       if (!/^[a-z][a-z0-9_-]*$/.test(key) || axisKeys.has(key)) {
         throw new Error("結果軸のキーは重複しない英小文字始まりの識別子にしてください。");
       }

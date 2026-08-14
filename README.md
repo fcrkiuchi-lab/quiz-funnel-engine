@@ -1,34 +1,44 @@
-# ドーシャ割合チェック
+# quiz-funnel-engine
 
-ヴァータ、ピッタ、カパの3つの点数から、それぞれの構成割合を表示する依存関係なしの最小Webプロトタイプです。承認済みの範囲は `SPEC.md` に記載しています。
+顧客別設定を差し替えるだけで、開始・質問・自動採点・結果まで動くスマートフォン対応の診断Webアプリ基盤です。ドーシャ傾向セルフチェックを既定の完成例として収録しています。
 
-## 使い方
+## ローカル実行
 
-`index.html` をブラウザで開いてください。外部通信やビルドは不要です。
+外部依存とビルドはありません。ルートの`index.html`を開くか、ローカルHTTPサーバーから表示します。
 
-3項目に0以上の整数を入力し、「割合を確認する」を押すと、入力した点数と小数第1位に丸めた割合が表示されます。
+```powershell
+python -m http.server 8000
+```
+
+`http://127.0.0.1:8000/`でドーシャ設定の開始画面が開きます。
+
+## 顧客別設定
+
+質問、選択肢、配点、診断軸、名称、文章、配色は`diagnosis-template/config.js`に集約されています。新しい診断ではこのファイルだけを編集し、本体コードは変更しません。詳しい契約は`TEMPLATE-SPEC.md`を参照してください。
+
+第2サンプルへ差し替える例：
+
+```powershell
+Copy-Item diagnosis-template/configs/work-style.js diagnosis-template/config.js -Force
+```
+
+この操作後のGit差分は`diagnosis-template/config.js`だけになります。確認後はGitに保存されたドーシャ設定へ戻してください。
 
 ## テスト
-
-Node.jsがすでにインストールされている場合、追加パッケージなしで次を実行できます。
 
 ```text
 node tests/calculator.test.js
 node tests/diagnosis-template.test.js
 ```
 
-## 再利用用の診断テンプレート
+旧割合計算機のコードと7テストは回帰資産として残しています。診断本体は外部通信や保存を行いません。
 
-公開中の割合計算機とは分離して、`diagnosis-template/` に設定データ差し替え型の診断サンプルを置いています。設問、選択肢、加点先は `diagnosis-template/config.js` だけで変更できます。固定仕様と範囲外は `TEMPLATE-SPEC.md` を参照してください。
+## リリース
 
-n8n連携は既定で無効です。`config.js` の連携設定を明示的に有効化し、HTTPSのWebhook URLを設定した場合だけ結果を送信します。公開中の割合計算機には連携されていません。
-
-## 再利用リリース手順
-
-テスト、構文検査、commit、push、GitHub Pages反映確認をまとめて実行する場合は次を使います。`-Publish` を付けた実行は一般公開を更新するため、公開承認後だけ行ってください。
+テスト、JavaScript構文検査、差分検査、commitまでは次で実行できます。
 
 ```powershell
-.\scripts\release.ps1 -CommitMessage "変更内容" -Publish
+.\scripts\release.ps1 -CommitMessage "変更内容"
 ```
 
-`-Publish` を省略すると、検証とcommitまでで停止します。公開確認では毎回固有の `release-marker.json` を作り、公開先の内容とローカル内容のSHA-256が一致するまで待機します。
+`-Publish`はpushとGitHub Pages更新を行うため、明示承認がある場合だけ使用してください。公開確認用の`release-marker.json`はスクリプトが生成します。

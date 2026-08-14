@@ -1,7 +1,10 @@
 "use strict";
 
 const assert = require("assert").strict;
+const fs = require("fs");
+const path = require("path");
 const config = require("../diagnosis-template/config.js");
+const workStyleConfig = require("../diagnosis-template/configs/work-style.js");
 const { validateConfig, calculateDiagnosis } = require("../diagnosis-template/engine.js");
 const { sendResult } = require("../diagnosis-template/integration.js");
 
@@ -11,35 +14,43 @@ function test(name, run) {
   tests.push({ name: name, run: run });
 }
 
-test("サンプル設定を検証できる", function () {
+test("ドーシャ設定を検証できる", function () {
   assert.equal(validateConfig(config), config);
 });
 
-test("設定された加点先から点数と割合を計算する", function () {
-  const result = calculateDiagnosis(config, { q1: "a", q2: "b", q3: "a" });
-  assert.deepEqual(result.scores, { a: 2, b: 1, c: 0 });
-  assert.deepEqual(result.percentages, { a: 66.7, b: 33.3, c: 0 });
-  assert.deepEqual(result.leaders, ["a"]);
-  assert.equal(result.answeredQuestionCount, 3);
+test("ドーシャ設定の加点先から点数と割合を計算する", function () {
+  const result = calculateDiagnosis(config, { q1: "vata", q2: "pitta", q3: "vata", q4: "kapha" });
+  assert.deepEqual(result.scores, { vata: 3, pitta: 1, kapha: 1 });
+  assert.deepEqual(result.percentages, { vata: 60, pitta: 20, kapha: 20 });
+  assert.deepEqual(result.leaders, ["vata"]);
+  assert.equal(result.answeredQuestionCount, 4);
 });
 
 test("設定差し替えで加点先を変更できる", function () {
   const replacedConfig = JSON.parse(JSON.stringify(config));
-  replacedConfig.questions[0].choices[0].scores = { c: 2 };
-  const result = calculateDiagnosis(replacedConfig, { q1: "a", q2: "b", q3: "a" });
-  assert.deepEqual(result.scores, { a: 1, b: 1, c: 2 });
-  assert.deepEqual(result.leaders, ["c"]);
+  replacedConfig.questions[0].choices[0].scores = { kapha: 2 };
+  const result = calculateDiagnosis(replacedConfig, { q1: "vata", q2: "pitta", q3: "vata", q4: "kapha" });
+  assert.deepEqual(result.scores, { vata: 1, pitta: 1, kapha: 3 });
+  assert.deepEqual(result.leaders, ["kapha"]);
 });
 
 test("最高点が同点なら全結果軸を返す", function () {
-  const result = calculateDiagnosis(config, { q1: "a", q2: "b", q3: "c" });
-  assert.deepEqual(result.scores, { a: 1, b: 1, c: 1 });
-  assert.deepEqual(result.leaders, ["a", "b", "c"]);
+  const result = calculateDiagnosis(config, { q1: "vata", q2: "pitta", q3: "pitta", q4: "kapha" });
+  assert.deepEqual(result.scores, { vata: 2, pitta: 2, kapha: 1 });
+  assert.deepEqual(result.leaders, ["vata", "pitta"]);
+});
+
+test("第2診断も設定だけで点数と割合を計算する", function () {
+  assert.equal(validateConfig(workStyleConfig), workStyleConfig);
+  const result = calculateDiagnosis(workStyleConfig, { q1: "explore", q2: "plan", q3: "explore" });
+  assert.deepEqual(result.scores, { explore: 3, plan: 1, support: 0 });
+  assert.deepEqual(result.percentages, { explore: 75, plan: 25, support: 0 });
+  assert.deepEqual(result.leaders, ["explore"]);
 });
 
 test("未回答を拒否する", function () {
   assert.throws(function () {
-    calculateDiagnosis(config, { q1: "a", q2: "b" });
+    calculateDiagnosis(config, { q1: "vata", q2: "pitta", q3: "kapha" });
   });
 });
 
@@ -48,6 +59,24 @@ test("定義されていない結果軸への加点を拒否する", function ()
   invalidConfig.questions[0].choices[0].scores = { unknown: 1 };
   assert.throws(function () {
     validateConfig(invalidConfig);
+  });
+});
+
+test("不正な配色を拒否する", function () {
+  const invalidConfig = JSON.parse(JSON.stringify(config));
+  invalidConfig.theme.primary = "red";
+  assert.throws(function () {
+    validateConfig(invalidConfig);
+  });
+});
+
+test("公開ルートとテンプレートに開始・質問・結果画面がある", function () {
+  ["index.html", path.join("diagnosis-template", "index.html")].forEach(function verifyPage(relativePath) {
+    const page = fs.readFileSync(path.join(__dirname, "..", relativePath), "utf8");
+    assert.match(page, /id="start-screen"/);
+    assert.match(page, /id="question-screen"/);
+    assert.match(page, /id="result-screen"/);
+    assert.doesNotMatch(page, /integration\.js/);
   });
 });
 
@@ -61,7 +90,7 @@ test("連携無効時は通信しない", async function () {
 });
 
 test("連携有効時は規定項目だけをPOSTする", async function () {
-  const result = calculateDiagnosis(config, { q1: "a", q2: "b", q3: "a" });
+  const result = calculateDiagnosis(config, { q1: "vata", q2: "pitta", q3: "vata", q4: "kapha" });
   let capturedUrl;
   let capturedOptions;
   const state = await sendResult({
@@ -79,10 +108,10 @@ test("連携有効時は規定項目だけをPOSTする", async function () {
   assert.deepEqual(JSON.parse(capturedOptions.body), {
     schemaVersion: 1,
     diagnosisId: "test-v1",
-    scores: { a: 2, b: 1, c: 0 },
-    percentages: { a: 66.7, b: 33.3, c: 0 },
-    leaders: ["a"],
-    answeredQuestionCount: 3
+    scores: { vata: 3, pitta: 1, kapha: 1 },
+    percentages: { vata: 60, pitta: 20, kapha: 20 },
+    leaders: ["vata"],
+    answeredQuestionCount: 4
   });
   assert.deepEqual(state, { status: "sent", httpStatus: 200 });
 });

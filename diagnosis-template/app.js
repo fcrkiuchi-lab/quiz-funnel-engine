@@ -3,15 +3,23 @@
 
   const config = root.DiagnosisConfig;
   const engine = root.DiagnosisEngine;
-  const integration = root.DiagnosisIntegration;
-  const form = document.getElementById("diagnosis-form");
-  const questionList = document.getElementById("question-list");
+  const startScreen = document.getElementById("start-screen");
+  const questionScreen = document.getElementById("question-screen");
+  const resultScreen = document.getElementById("result-screen");
+  const startButton = document.getElementById("start-button");
+  const questionForm = document.getElementById("question-form");
+  const questionFieldset = document.getElementById("question-fieldset");
   const errorMessage = document.getElementById("form-error");
-  const resultSection = document.getElementById("result");
   const resultTitle = document.getElementById("result-title");
   const resultRows = document.getElementById("result-rows");
-  const leaderText = document.getElementById("leader-text");
-  const integrationStatus = document.getElementById("integration-status");
+  const resultTexts = document.getElementById("result-texts");
+  const previousButton = document.getElementById("previous-button");
+  const nextButton = document.getElementById("next-button");
+  const restartButton = document.getElementById("restart-button");
+  const progressText = document.getElementById("progress-text");
+  const progressBar = document.getElementById("progress-bar");
+  const answers = {};
+  let questionIndex = 0;
 
   function appendTextElement(parent, tagName, text, className) {
     const element = document.createElement(tagName);
@@ -23,90 +31,145 @@
     return element;
   }
 
-  function renderQuestions() {
+  function showScreen(screen) {
+    [startScreen, questionScreen, resultScreen].forEach(function hideScreen(currentScreen) {
+      currentScreen.hidden = currentScreen !== screen;
+    });
+  }
+
+  function applyTheme() {
+    Object.keys(config.theme).forEach(function setColor(colorName) {
+      document.documentElement.style.setProperty("--" + colorName.replace(/[A-Z]/g, function addDash(letter) {
+        return "-" + letter.toLowerCase();
+      }), config.theme[colorName]);
+    });
+  }
+
+  function renderStart() {
     document.title = config.title;
+    document.querySelector('meta[name="description"]').content = config.description;
+    document.getElementById("page-eyebrow").textContent = config.eyebrow;
     document.getElementById("page-title").textContent = config.title;
     document.getElementById("page-description").textContent = config.description;
+    startButton.textContent = config.labels.start;
+    previousButton.textContent = config.labels.previous;
+    restartButton.textContent = config.labels.restart;
+    resultTitle.textContent = config.resultTitle;
+    document.getElementById("result-description").textContent = config.resultDescription;
+  }
 
-    config.questions.forEach(function renderQuestion(question, questionIndex) {
-      const fieldset = document.createElement("fieldset");
-      const legend = document.createElement("legend");
-      legend.textContent = (questionIndex + 1) + ". " + question.prompt;
-      fieldset.appendChild(legend);
+  function renderQuestion() {
+    const question = config.questions[questionIndex];
+    questionFieldset.replaceChildren();
+    errorMessage.hidden = true;
 
-      question.choices.forEach(function renderChoice(choice) {
-        const label = document.createElement("label");
-        label.className = "choice";
-        const input = document.createElement("input");
-        input.type = "radio";
-        input.name = question.id;
-        input.value = choice.id;
-        input.required = true;
-        label.appendChild(input);
-        appendTextElement(label, "span", choice.label);
-        fieldset.appendChild(label);
-      });
-      questionList.appendChild(fieldset);
+    const legend = document.createElement("legend");
+    legend.id = "question-title";
+    legend.textContent = question.prompt;
+    questionFieldset.appendChild(legend);
+
+    question.choices.forEach(function renderChoice(choice) {
+      const label = document.createElement("label");
+      label.className = "choice";
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = question.id;
+      input.value = choice.id;
+      input.checked = answers[question.id] === choice.id;
+      input.required = true;
+      label.appendChild(input);
+      appendTextElement(label, "span", choice.label);
+      questionFieldset.appendChild(label);
     });
+
+    progressText.textContent = "質問 " + (questionIndex + 1) + " / " + config.questions.length;
+    progressBar.max = config.questions.length;
+    progressBar.value = questionIndex + 1;
+    previousButton.hidden = questionIndex === 0;
+    nextButton.textContent = questionIndex === config.questions.length - 1 ? config.labels.finish : config.labels.next;
+    showScreen(questionScreen);
+    legend.focus();
   }
 
   function renderResult(result) {
     resultRows.replaceChildren();
+    resultTexts.replaceChildren();
     config.axes.forEach(function renderAxis(axis) {
       const row = document.createElement("tr");
       appendTextElement(row, "th", axis.label).scope = "row";
       appendTextElement(row, "td", String(result.scores[axis.key]));
       appendTextElement(row, "td", result.percentages[axis.key].toFixed(1) + "%");
       resultRows.appendChild(row);
-    });
 
-    const leaderLabels = config.axes.filter(function isLeader(axis) {
-      return result.leaders.includes(axis.key);
-    }).map(function getLabel(axis) {
-      return axis.label;
+      const textCard = document.createElement("section");
+      textCard.className = "axis-text";
+      appendTextElement(textCard, "h3", axis.label);
+      appendTextElement(textCard, "p", axis.resultText);
+      resultTexts.appendChild(textCard);
     });
-    leaderText.textContent = "最高点: " + leaderLabels.join("／");
-    resultSection.hidden = false;
+    showScreen(resultScreen);
     resultTitle.focus();
   }
 
-  function collectAnswers() {
-    const formData = new FormData(form);
-    const answers = {};
-    config.questions.forEach(function collectAnswer(question) {
-      const answer = formData.get(question.id);
-      if (answer !== null) {
-        answers[question.id] = answer;
-      }
-    });
-    return answers;
-  }
-
-  form.addEventListener("submit", async function handleSubmit(event) {
+  questionForm.addEventListener("submit", function handleSubmit(event) {
     event.preventDefault();
     errorMessage.hidden = true;
-    integrationStatus.textContent = "";
+    const question = config.questions[questionIndex];
+    const selectedChoice = questionForm.elements[question.id].value;
+    if (!selectedChoice) {
+      errorMessage.textContent = "選択肢を1つ選んでください。";
+      errorMessage.hidden = false;
+      return;
+    }
+
+    answers[question.id] = selectedChoice;
+    if (questionIndex < config.questions.length - 1) {
+      questionIndex += 1;
+      renderQuestion();
+      return;
+    }
 
     try {
-      const result = engine.calculateDiagnosis(config, collectAnswers());
-      renderResult(result);
-      const sendState = await integration.sendResult(config.integration, result);
-      if (sendState.status === "sent") {
-        integrationStatus.textContent = "結果を連携先へ送信しました。";
-      }
+      renderResult(engine.calculateDiagnosis(config, answers));
     } catch (error) {
       errorMessage.textContent = error.message;
       errorMessage.hidden = false;
-      resultSection.hidden = true;
     }
+  });
+
+  startButton.addEventListener("click", function startDiagnosis() {
+    questionIndex = 0;
+    renderQuestion();
+  });
+
+  previousButton.addEventListener("click", function showPreviousQuestion() {
+    const question = config.questions[questionIndex];
+    const selectedChoice = questionForm.elements[question.id].value;
+    if (selectedChoice) {
+      answers[question.id] = selectedChoice;
+    }
+    questionIndex -= 1;
+    renderQuestion();
+  });
+
+  restartButton.addEventListener("click", function restartDiagnosis() {
+    Object.keys(answers).forEach(function clearAnswer(questionId) {
+      delete answers[questionId];
+    });
+    questionIndex = 0;
+    showScreen(startScreen);
+    startButton.focus();
   });
 
   try {
     engine.validateConfig(config);
-    renderQuestions();
+    applyTheme();
+    renderStart();
+    showScreen(startScreen);
   } catch (error) {
     errorMessage.textContent = error.message;
     errorMessage.hidden = false;
-    form.querySelector("button").disabled = true;
+    showScreen(questionScreen);
+    nextButton.disabled = true;
   }
 }(globalThis, document));
