@@ -81,6 +81,15 @@ test("公開ルートとテンプレートに開始・質問・結果画面が�
   });
 });
 
+test("新デザインが機能を妨げないモーション規則を持つ", function () {
+  const styles = fs.readFileSync(path.join(__dirname, "..", "diagnosis-template", "styles.css"), "utf8");
+  const app = fs.readFileSync(path.join(__dirname, "..", "diagnosis-template", "app.js"), "utf8");
+  assert.match(styles, /\.screen:not\(\[hidden\]\)/);
+  assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.doesNotMatch(styles, /animation-iteration-count:\s*infinite/);
+  assert.match(app, /--axis-percent/);
+});
+
 test("連携無効時は通信しない", async function () {
   let requestCount = 0;
   const state = await sendResult({ enabled: false }, {}, async function request() {

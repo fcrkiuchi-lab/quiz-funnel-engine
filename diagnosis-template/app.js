@@ -97,13 +97,16 @@
     resultTexts.replaceChildren();
     config.axes.forEach(function renderAxis(axis) {
       const row = document.createElement("tr");
+      row.className = "result-row";
+      row.style.setProperty("--axis-percent", result.percentages[axis.key] + "%");
       appendTextElement(row, "th", axis.label).scope = "row";
       appendTextElement(row, "td", String(result.scores[axis.key]));
-      appendTextElement(row, "td", result.percentages[axis.key].toFixed(1) + "%");
+      appendTextElement(row, "td", result.percentages[axis.key].toFixed(1) + "%", "result-percent");
       resultRows.appendChild(row);
 
       const textCard = document.createElement("section");
       textCard.className = "axis-text";
+      textCard.style.setProperty("--axis-percent", result.percentages[axis.key] + "%");
       appendTextElement(textCard, "h3", axis.label);
       appendTextElement(textCard, "p", axis.resultText);
       resultTexts.appendChild(textCard);
