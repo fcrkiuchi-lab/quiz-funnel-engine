@@ -26,6 +26,13 @@ try {
   if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     throw 'Node.js was not found.'
   }
+  $npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
+  if (-not $npmCommand) {
+    $npmCommand = Get-Command npm -ErrorAction SilentlyContinue
+  }
+  if (-not $npmCommand) {
+    throw 'npm was not found.'
+  }
 
   $branch = (git branch --show-current).Trim()
   if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($branch)) {
@@ -50,9 +57,11 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Calculator tests failed.' }
   & node 'tests/diagnosis-template.test.js'
   if ($LASTEXITCODE -ne 0) { throw 'Diagnosis template tests failed.' }
+  & $npmCommand.Source run test:e2e
+  if ($LASTEXITCODE -ne 0) { throw 'Browser E2E tests failed.' }
 
   $javaScriptFiles = @(Get-ChildItem -Path . -Recurse -File -Filter '*.js' |
-    Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' })
+    Where-Object { $_.FullName -notmatch '[\\/](\.git|node_modules|playwright-report|test-results)[\\/]' })
   foreach ($javaScriptFile in $javaScriptFiles) {
     & node --check $javaScriptFile.FullName
     if ($LASTEXITCODE -ne 0) {

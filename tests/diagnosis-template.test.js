@@ -76,6 +76,7 @@ test("公開ルートとテンプレートに開始・質問・結果画面が�
     assert.match(page, /id="start-screen"/);
     assert.match(page, /id="question-screen"/);
     assert.match(page, /id="result-screen"/);
+    assert.match(page, /id="progress-bar"[^>]+aria-labelledby="progress-text"/);
     assert.doesNotMatch(page, /integration\.js/);
   });
 });
@@ -114,6 +115,37 @@ test("連携有効時は規定項目だけをPOSTする", async function () {
     answeredQuestionCount: 4
   });
   assert.deepEqual(state, { status: "sent", httpStatus: 200 });
+});
+
+test("rejects an unsafe total before calculating percentages", function () {
+  const invalidConfig = JSON.parse(JSON.stringify(config));
+  invalidConfig.questions = [invalidConfig.questions[0]];
+  invalidConfig.questions[0].choices[0].scores = {
+    vata: Number.MAX_SAFE_INTEGER,
+    pitta: Number.MAX_SAFE_INTEGER
+  };
+  assert.throws(function () {
+    calculateDiagnosis(invalidConfig, { q1: "vata" });
+  }, /安全な整数/);
+});
+
+test("rejects a non-positive total before calculating percentages", function () {
+  const invalidConfig = JSON.parse(JSON.stringify(config));
+  invalidConfig.questions = [invalidConfig.questions[0]];
+  let scoreReadCount = 0;
+  Object.defineProperty(invalidConfig.questions[0].choices[0].scores, "vata", {
+    configurable: true,
+    enumerable: true,
+    get: function returnPositiveDuringValidationAndZeroDuringScoring() {
+      scoreReadCount += 1;
+      return scoreReadCount === 1 ? 2 : 0;
+    }
+  });
+  assert.equal(validateConfig(invalidConfig), invalidConfig);
+  scoreReadCount = 0;
+  assert.throws(function () {
+    calculateDiagnosis(invalidConfig, { q1: "vata" });
+  }, /全軸の合計点/);
 });
 
 (async function runTests() {

@@ -148,6 +148,9 @@
     const total = config.axes.reduce(function sumScores(sum, axis) {
       return sum + scores[axis.key];
     }, 0);
+    if (!Number.isSafeInteger(total) || total <= 0) {
+      throw new Error("全軸の合計点は1以上の安全な整数にしてください。");
+    }
     const percentages = {};
     config.axes.forEach(function calculatePercentage(axis) {
       percentages[axis.key] = Number(((scores[axis.key] / total) * 100).toFixed(1));

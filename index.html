@@ -2,7 +2,8 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
     <meta name="description" content="顧客別設定を差し替えて再利用できる診断Webアプリ">
     <title>診断Webアプリ</title>
     <link rel="stylesheet" href="diagnosis-template/styles.css">
@@ -22,7 +23,7 @@
       <section id="question-screen" class="card screen" aria-labelledby="question-title" hidden>
         <div class="progress-row">
           <p id="progress-text" class="eyebrow"></p>
-          <progress id="progress-bar" max="1" value="0"></progress>
+          <progress id="progress-bar" max="1" value="0" aria-labelledby="progress-text"></progress>
         </div>
         <form id="question-form" novalidate>
           <fieldset id="question-fieldset"></fieldset>

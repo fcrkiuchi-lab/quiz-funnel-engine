@@ -1,0 +1,12 @@
+{
+  "name": "quiz-funnel-engine",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node tests/calculator.test.js && node tests/diagnosis-template.test.js",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}

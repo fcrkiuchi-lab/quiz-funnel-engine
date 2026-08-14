@@ -18,7 +18,7 @@
   const restartButton = document.getElementById("restart-button");
   const progressText = document.getElementById("progress-text");
   const progressBar = document.getElementById("progress-bar");
-  const answers = {};
+  const answers = Object.create(null);
   let questionIndex = 0;
 
   function appendTextElement(parent, tagName, text, className) {
@@ -65,6 +65,7 @@
 
     const legend = document.createElement("legend");
     legend.id = "question-title";
+    legend.tabIndex = -1;
     legend.textContent = question.prompt;
     questionFieldset.appendChild(legend);
 
@@ -115,7 +116,7 @@
     event.preventDefault();
     errorMessage.hidden = true;
     const question = config.questions[questionIndex];
-    const selectedChoice = questionForm.elements[question.id].value;
+    const selectedChoice = new FormData(questionForm).get(question.id);
     if (!selectedChoice) {
       errorMessage.textContent = "選択肢を1つ選んでください。";
       errorMessage.hidden = false;
@@ -144,7 +145,7 @@
 
   previousButton.addEventListener("click", function showPreviousQuestion() {
     const question = config.questions[questionIndex];
-    const selectedChoice = questionForm.elements[question.id].value;
+    const selectedChoice = new FormData(questionForm).get(question.id);
     if (selectedChoice) {
       answers[question.id] = selectedChoice;
     }

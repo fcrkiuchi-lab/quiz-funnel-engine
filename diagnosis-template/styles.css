@@ -173,9 +173,11 @@ button {
 }
 
 button:focus-visible,
-input:focus-visible {
-  outline: 3px solid var(--accent);
+input:focus-visible,
+legend:focus {
+  outline: 2px solid #000000;
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px #ffffff;
 }
 
 .button-row {
