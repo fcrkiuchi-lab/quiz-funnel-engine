@@ -50,24 +50,9 @@
       percentages[dosha.key] = Number(((scores[dosha.key] / total) * 100).toFixed(1));
     });
 
-    const maximum = Math.max.apply(null, DOSHAS.map(function getScore(dosha) {
-      return scores[dosha.key];
-    }));
-    const dominantDoshas = DOSHAS.filter(function isDominant(dosha) {
-      return scores[dosha.key] === maximum;
-    });
-    const isCompound = dominantDoshas.length > 1;
-    const resultLabel = isCompound
-      ? "複合タイプ（" + dominantDoshas.map(function getLabel(dosha) { return dosha.label; }).join("・") + "）"
-      : dominantDoshas[0].label;
-
     return {
       scores: scores,
-      percentages: percentages,
-      total: total,
-      dominantKeys: dominantDoshas.map(function getKey(dosha) { return dosha.key; }),
-      isCompound: isCompound,
-      resultLabel: resultLabel
+      percentages: percentages
     };
   }
 

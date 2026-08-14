@@ -6,7 +6,6 @@
   const resultSection = document.getElementById("result");
   const resultTitle = document.getElementById("result-title");
   const resultRows = document.getElementById("result-rows");
-  const recommendationContent = document.getElementById("recommendation-content");
   const calculator = root.DoshaCalculator;
 
   function appendCell(row, text, tagName) {
@@ -30,30 +29,6 @@
     });
   }
 
-  function renderRecommendation(result) {
-    recommendationContent.replaceChildren();
-    const recommendations = root.FUNNEL_CONFIG && root.FUNNEL_CONFIG.recommendations;
-    const recommendationKey = result.isCompound ? "compound" : result.dominantKeys[0];
-    const recommendation = recommendations && recommendations[recommendationKey];
-
-    if (!recommendation || !recommendation.name) {
-      const pendingMessage = document.createElement("p");
-      pendingMessage.textContent = "おすすめ商品の情報は現在準備中です";
-      recommendationContent.appendChild(pendingMessage);
-      return;
-    }
-
-    const productName = document.createElement("p");
-    productName.textContent = recommendation.name;
-    recommendationContent.appendChild(productName);
-
-    if (recommendation.description) {
-      const productDescription = document.createElement("p");
-      productDescription.textContent = recommendation.description;
-      recommendationContent.appendChild(productDescription);
-    }
-  }
-
   function showError(message) {
     errorMessage.textContent = message;
     errorMessage.hidden = false;
@@ -71,9 +46,7 @@
         kapha: form.elements.kapha.value
       });
 
-      resultTitle.textContent = "あなたの結果：" + result.resultLabel;
       renderRows(result);
-      renderRecommendation(result);
       resultSection.hidden = false;
       resultTitle.focus();
     } catch (error) {

@@ -6,7 +6,6 @@
     <meta name="description" content="3つの点数から割合を表示するウェルネス情報ツール">
     <title>ドーシャ割合チェック</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="config.js" defer></script>
     <script src="calculator.js" defer></script>
     <script src="app.js" defer></script>
   </head>
@@ -14,9 +13,9 @@
     <main class="page-shell">
       <section class="card" aria-labelledby="page-title">
         <header class="intro">
-          <p class="eyebrow">ウェルネスチェック</p>
+          <p class="eyebrow">割合計算</p>
           <h1 id="page-title">ドーシャ割合チェック</h1>
-          <p>ヴァータ、ピッタ、カパの点数を入力すると、構成割合と最も高いタイプを表示します。</p>
+          <p>ヴァータ、ピッタ、カパの点数を入力すると、各点数の構成割合を表示します。</p>
         </header>
 
         <form id="dosha-form" novalidate>
@@ -42,7 +41,7 @@
 
       <section id="result" class="card result-card" aria-labelledby="result-title" hidden>
         <p class="eyebrow">結果</p>
-        <h2 id="result-title" tabindex="-1"></h2>
+        <h2 id="result-title" tabindex="-1">計算結果</h2>
 
         <div class="table-wrap">
           <table>
@@ -58,16 +57,7 @@
         </div>
 
         <p class="rounding-note">割合は小数第1位に丸めているため、表示上の合計が100.0%にならない場合があります。</p>
-
-        <section class="recommendation" aria-labelledby="recommendation-title">
-          <h3 id="recommendation-title">おすすめ商品</h3>
-          <div id="recommendation-content"></div>
-        </section>
       </section>
-
-      <aside class="notice" aria-label="ご利用上の注意">
-        このチェックは医療診断ではなく、一般的なウェルネス情報を提供するものです。
-      </aside>
     </main>
   </body>
 </html>
