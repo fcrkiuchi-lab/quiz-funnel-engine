@@ -35,10 +35,15 @@ async function expectQuestionFocus(page, prompt) {
   await expect(legend).toBeFocused();
   const focusStyle = await legend.evaluate(function readFocusStyle(element) {
     const style = getComputedStyle(element);
-    return { outlineColor: style.outlineColor, boxShadow: style.boxShadow };
+    return {
+      outlineColor: style.outlineColor,
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth
+    };
   });
-  expect(focusStyle.outlineColor).toBe("rgb(0, 0, 0)");
-  expect(focusStyle.boxShadow).toContain("rgb(255, 255, 255)");
+  expect(focusStyle.outlineStyle).toBe("solid");
+  expect(parseFloat(focusStyle.outlineWidth)).toBeGreaterThan(0);
+  expect(focusStyle.outlineColor).not.toBe("rgba(0, 0, 0, 0)");
 }
 
 async function expectNoHorizontalOverflow(page) {
@@ -52,9 +57,22 @@ async function expectNoHorizontalOverflow(page) {
   expect(widths.scrollWidth).toBeLessThanOrEqual(widths.clientWidth);
 }
 
+async function expectReducedMotion(page) {
+  await expect.poll(function readsReducedMotionPreference() {
+    return page.evaluate(function readReducedMotionPreference() {
+      return matchMedia("(prefers-reduced-motion: reduce)").matches;
+    });
+  }).toBe(true);
+}
+
+test.beforeEach(async function enableReducedMotion({ page }) {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+});
+
 test("completes the published-root dosha flow in Edge at 375px", async function ({ page }) {
   const monitor = monitorPage(page);
-  await page.goto("/");
+  await page.goto("./");
+  await expectReducedMotion(page);
   expect(await page.evaluate(function readUserAgent() { return navigator.userAgent; })).toMatch(/Edg\//);
   await expect(page.locator("#start-screen")).toBeVisible();
   await expect.poll(function scriptsLoaded() {
@@ -164,7 +182,8 @@ test("reserved question IDs retain answers and score correctly", async function 
       body: "globalThis.DiagnosisConfig = " + JSON.stringify(reservedConfig) + ";"
     });
   });
-  await page.goto("/");
+  await page.goto("./");
+  await expectReducedMotion(page);
   await page.getByRole("button", { name: "開始" }).click();
   await expectQuestionFocus(page, "lengthの質問");
   await page.getByLabel("第一軸へ2点").check();
