@@ -114,6 +114,21 @@ async function expectStaticV2Motion(page, selector, pseudoElement) {
   expect(motion.pointerEvents).toBe("none");
 }
 
+async function readV2AnimationProgress(page, selector, pseudoElement, animationName) {
+  return page.locator(selector).evaluate(function readAnimationProgress(element, details) {
+    const style = getComputedStyle(element, details.pseudoElement);
+    const animation = document.getAnimations().find(function findAnimation(candidate) {
+      return candidate.animationName === details.animationName;
+    });
+    return {
+      animationName: style.animationName,
+      opacity: parseFloat(style.opacity),
+      currentTime: animation ? Number(animation.currentTime) : null,
+      playState: animation ? animation.playState : null
+    };
+  }, { pseudoElement: pseudoElement, animationName: animationName });
+}
+
 test.beforeEach(async function enableReducedMotion({ page }) {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
@@ -140,6 +155,15 @@ test("plays one-shot V2 motion only on the start and result screens", async func
     pointerEvents: "none"
   });
 
+  await page.waitForTimeout(220);
+  const visibleStartMotion = await readV2AnimationProgress(page, "#page-title", "::after", "shirodhara-drop");
+  expect(visibleStartMotion.opacity).toBeGreaterThan(0.28);
+  expect(visibleStartMotion.playState).toBe("running");
+
+  await page.waitForTimeout(3000);
+  const settledStartMotion = await readV2AnimationProgress(page, "#page-title", "::after", "shirodhara-drop");
+  expect(settledStartMotion.opacity).toBeCloseTo(0.28, 2);
+
   await page.locator("#start-button").click();
   expect((await readV2Motion(page, "#question-screen", "::before")).animationName).toBe("none");
   for (let questionNumber = 1; questionNumber <= 7; questionNumber += 1) {
@@ -148,6 +172,12 @@ test("plays one-shot V2 motion only on the start and result screens", async func
   }
 
   await expect(page.locator("#result-screen")).toBeVisible();
+  const freshRipple = await readV2AnimationProgress(page, "#result-screen", "::before", "result-ripple");
+  const freshFlame = await readV2AnimationProgress(page, "#result-title", "::after", "result-flame");
+  expect(freshRipple.playState).toBe("running");
+  expect(freshFlame.playState).toBe("running");
+  expect(freshRipple.currentTime).toBeLessThan(800);
+  expect(freshFlame.currentTime).toBeLessThan(800);
   const resultMotion = [
     await readV2Motion(page, "#result-screen", "::before"),
     await readV2Motion(page, "#result-title", "::after")

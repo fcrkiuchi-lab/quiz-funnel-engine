@@ -141,9 +141,9 @@ input {
   border-radius: 999px;
   background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--primary) 54%, transparent));
   pointer-events: none;
-  opacity: 0;
+  opacity: 0.28;
+  transform: translateY(2.7rem) scaleY(0.65);
   transform-origin: top;
-  animation: shirodhara-drop 2.7s ease-in-out 1 both;
 }
 
 #start-screen:not(:has(.start-motion)) #page-title::after,
@@ -163,9 +163,8 @@ input {
   border: 1px solid color-mix(in srgb, var(--primary) 32%, transparent);
   border-radius: 50%;
   pointer-events: none;
-  opacity: 0;
-  transform: scale(0.35);
-  animation: result-ripple 1.8s ease-out 120ms 1 both;
+  opacity: 0.16;
+  transform: scale(0.7);
 }
 
 .result-flame,
@@ -179,7 +178,22 @@ input {
   background: linear-gradient(to top, color-mix(in srgb, var(--primary) 76%, #f7c77a), #fff4cc);
   pointer-events: none;
   opacity: 0.55;
+  transform: none;
   transform-origin: center bottom;
+}
+
+#start-screen:not([hidden]) .shirodhara-drop,
+#start-screen:not([hidden]):not(:has(.start-motion)) #page-title::after {
+  animation: shirodhara-drop 2.7s ease-in-out 1 both;
+}
+
+#result-screen:not([hidden]) .result-ripple,
+#result-screen:not([hidden]):not(:has(.result-motion))::before {
+  animation: result-ripple 1.8s ease-out 120ms 1 both;
+}
+
+#result-screen:not([hidden]) .result-flame,
+#result-screen:not([hidden]):not(:has(.result-motion)) #result-title::after {
   animation: result-flame 1.2s ease-in-out 240ms 1 both;
 }
 
@@ -581,8 +595,8 @@ tbody td:last-child {
     transform: translateY(3.2rem) scaleY(1);
   }
   100% {
-    opacity: 0;
-    transform: translateY(4rem) scaleY(0.8);
+    opacity: 0.28;
+    transform: translateY(2.7rem) scaleY(0.65);
   }
 }
 
@@ -596,8 +610,8 @@ tbody td:last-child {
     transform: scale(0.52);
   }
   100% {
-    opacity: 0;
-    transform: scale(1);
+    opacity: 0.16;
+    transform: scale(0.7);
   }
 }
 
