@@ -69,7 +69,7 @@ test.beforeEach(async function enableReducedMotion({ page }) {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
 
-test("completes the published-root dosha flow in Edge at 375px", async function ({ page }) {
+test("completes the published-root tuning-check flow in Edge at 375px", async function ({ page }) {
   const monitor = monitorPage(page);
   await page.goto("./");
   await expectReducedMotion(page);
@@ -81,44 +81,58 @@ test("completes the published-root dosha flow in Edge at 375px", async function 
         typeof globalThis.DiagnosisEngine === "object";
     });
   }).toBe(true);
+  await expect(page.locator("#start-brand")).toHaveText("Salon de Krishna");
   await expectNoHorizontalOverflow(page);
 
-  await page.getByRole("button", { name: "診断をはじめる" }).click();
-  await expectQuestionFocus(page, "予定を立てるとき、最も近いものは？");
+  await page.getByRole("button", { name: "チェックをはじめる" }).click();
+  await expectQuestionFocus(page, "今朝、目覚めたときの感覚に近いものは？");
+  await expect(page.locator("#question-screen .brand")).toHaveCount(0);
   await expect(page.locator("#progress-bar")).toHaveAttribute("aria-labelledby", "progress-text");
-  await page.getByLabel("まず動いてから柔軟に調整する").check();
+  await page.getByLabel("体がこわばり、動き出すまで少し時間がいる").check();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "作業中に心地よいのは？");
-  await page.getByLabel("成果や進み具合が明確なこと").check();
+  await expectQuestionFocus(page, "今、身体が求めているものは？");
+  await page.getByLabel("静かな休息と、ゆっくりした呼吸").check();
 
   await page.getByRole("button", { name: "前の質問へ" }).click();
-  await expectQuestionFocus(page, "予定を立てるとき、最も近いものは？");
-  await expect(page.getByLabel("まず動いてから柔軟に調整する")).toBeChecked();
+  await expectQuestionFocus(page, "今朝、目覚めたときの感覚に近いものは？");
+  await expect(page.getByLabel("体がこわばり、動き出すまで少し時間がいる")).toBeChecked();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "作業中に心地よいのは？");
-  await expect(page.getByLabel("成果や進み具合が明確なこと")).toBeChecked();
+  await expectQuestionFocus(page, "今、身体が求めているものは？");
+  await expect(page.getByLabel("静かな休息と、ゆっくりした呼吸")).toBeChecked();
 
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "休み方として近いものは？");
-  await page.getByLabel("気分に合わせて過ごし方を変える").check();
+  await expectQuestionFocus(page, "頭の中の様子に近いものは？");
+  await page.getByLabel("考えが滞って、切り替えにくい").check();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "周囲から言われることが多いのは？");
-  await page.getByLabel("穏やかで粘り強く取り組む").check();
+  await expectQuestionFocus(page, "人と向き合うなら、今はどれに近い？");
+  await page.getByLabel("自分のペースを取り戻したい").check();
+  await page.getByRole("button", { name: "次の質問へ" }).click();
+  await expectQuestionFocus(page, "今、自由な10分があったら？");
+  await page.getByLabel("何もせず、ただほどけたい").check();
+  await page.getByRole("button", { name: "次の質問へ" }).click();
+  await expectQuestionFocus(page, "今日の終わりに求めるのは？");
+  await page.getByLabel("内側が整っていく感覚").check();
+  await page.getByRole("button", { name: "次の質問へ" }).click();
+  await expectQuestionFocus(page, "今のあなたに、いちばんしっくりくる言葉は？");
+  await page.getByLabel("流れを取り戻したい").check();
   await page.getByRole("button", { name: "結果を見る" }).click();
 
   await expect(page.locator("#result-screen")).toBeVisible();
+  await expect(page.locator("#result-brand")).toHaveText("Salon de Krishna");
+  await expect(page.locator("#result-title")).toHaveText("めぐる｜今日の調律");
+  await expect(page.locator("#result-description")).toHaveText("これは固定的な分類ではなく、今日のあなたの状態を見つめるためのチェックです。心と身体の状態は、日々変化します。");
   await expect(page.locator("#result-rows tr")).toHaveText([
-    /ヴァータ\s*3\s*60\.0%/,
-    /ピッタ\s*1\s*20\.0%/,
-    /カパ\s*1\s*20\.0%/
+    /めぐる\s*6\s*75\.0%/,
+    /やわらぐ\s*2\s*25\.0%/,
+    /めざめる\s*0\s*0\.0%/
   ]);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("button", { name: "もう一度回答する" }).click();
   await expect(page.locator("#start-screen")).toBeVisible();
-  await expect(page.getByRole("button", { name: "診断をはじめる" })).toBeFocused();
-  await page.getByRole("button", { name: "診断をはじめる" }).click();
-  await expectQuestionFocus(page, "予定を立てるとき、最も近いものは？");
+  await expect(page.getByRole("button", { name: "チェックをはじめる" })).toBeFocused();
+  await page.getByRole("button", { name: "チェックをはじめる" }).click();
+  await expectQuestionFocus(page, "今朝、目覚めたときの感覚に近いものは？");
   await expect(page.locator('input[name="q1"]:checked')).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
 

@@ -1,6 +1,48 @@
 (function startDiagnosisApp(root, document) {
   "use strict";
 
+  function resolvePrimaryAxisKey(config, answers, result) {
+    if (result.leaders.length === 1 || !config.tieBreakerQuestionId) {
+      return result.leaders[0];
+    }
+    const tieBreakerQuestion = config.questions.find(function findTieBreakerQuestion(question) {
+      return question.id === config.tieBreakerQuestionId;
+    });
+    const tieBreakerChoice = tieBreakerQuestion.choices.find(function findTieBreakerChoice(choice) {
+      return choice.id === answers[config.tieBreakerQuestionId];
+    });
+    const tieBreakerAxisKey = Object.keys(tieBreakerChoice.scores).find(function findPositiveAxisKey(axisKey) {
+      return tieBreakerChoice.scores[axisKey] > 0;
+    });
+    if (result.leaders.includes(tieBreakerAxisKey)) {
+      return tieBreakerAxisKey;
+    }
+    for (let questionIndex = config.questions.length - 1; questionIndex >= 0; questionIndex -= 1) {
+      const question = config.questions[questionIndex];
+      if (question.id === config.tieBreakerQuestionId) {
+        continue;
+      }
+      const selectedChoice = question.choices.find(function findSelectedChoice(choice) {
+        return choice.id === answers[question.id];
+      });
+      const selectedAxisKey = Object.keys(selectedChoice.scores).find(function findPositiveAxisKey(axisKey) {
+        return selectedChoice.scores[axisKey] > 0;
+      });
+      if (result.leaders.includes(selectedAxisKey)) {
+        return selectedAxisKey;
+      }
+    }
+    return result.leaders[0];
+  }
+
+  if (typeof module === "object" && module.exports) {
+    module.exports = { resolvePrimaryAxisKey: resolvePrimaryAxisKey };
+  }
+
+  if (!document) {
+    return;
+  }
+
   const config = root.DiagnosisConfig;
   const engine = root.DiagnosisEngine;
   const startScreen = document.getElementById("start-screen");
@@ -51,6 +93,8 @@
     document.getElementById("page-eyebrow").textContent = config.eyebrow;
     document.getElementById("page-title").textContent = config.title;
     document.getElementById("page-description").textContent = config.description;
+    document.getElementById("start-brand").textContent = config.brand || "";
+    document.getElementById("result-brand").textContent = config.brand || "";
     startButton.textContent = config.labels.start;
     previousButton.textContent = config.labels.previous;
     restartButton.textContent = config.labels.restart;
@@ -95,6 +139,10 @@
   function renderResult(result) {
     resultRows.replaceChildren();
     resultTexts.replaceChildren();
+    const primaryAxis = config.axes.find(function findPrimaryAxis(axis) {
+      return axis.key === resolvePrimaryAxisKey(config, answers, result);
+    });
+    resultTitle.textContent = primaryAxis.label + "｜" + config.resultTitle;
     config.axes.forEach(function renderAxis(axis) {
       const row = document.createElement("tr");
       row.className = "result-row";
@@ -176,4 +224,4 @@
     showScreen(questionScreen);
     nextButton.disabled = true;
   }
-}(globalThis, document));
+}(globalThis, typeof document === "undefined" ? null : document));

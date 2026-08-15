@@ -130,6 +130,15 @@ input {
   text-transform: uppercase;
 }
 
+.brand {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+}
+
 h1,
 h2,
 p,
