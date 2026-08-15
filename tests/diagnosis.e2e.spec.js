@@ -57,6 +57,37 @@ async function expectNoHorizontalOverflow(page) {
   expect(widths.scrollWidth).toBeLessThanOrEqual(widths.clientWidth);
 }
 
+async function expectVisibleCardFitsViewport(page) {
+  const measurement = await page.evaluate(function measureVisibleCard() {
+    const card = document.querySelector(".card.screen:not([hidden])");
+    const cardStyle = getComputedStyle(card);
+    const cardRect = card.getBoundingClientRect();
+    const contentLeft = cardRect.left + parseFloat(cardStyle.borderLeftWidth) + parseFloat(cardStyle.paddingLeft);
+    const contentRight = cardRect.right - parseFloat(cardStyle.borderRightWidth) - parseFloat(cardStyle.paddingRight);
+    const outOfBounds = Array.from(card.querySelectorAll("button, input")).filter(function findOutOfBoundsControl(control) {
+      if (control.closest("[hidden]")) {
+        return false;
+      }
+      const rect = control.getBoundingClientRect();
+      return rect.left < contentLeft || rect.right > contentRight;
+    }).map(function readControl(control) {
+      return control.id || control.name || control.type;
+    });
+    return {
+      cardScrollLeft: card.scrollLeft,
+      overflowX: cardStyle.overflowX,
+      outOfBounds: outOfBounds,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth
+    };
+  });
+  expect(measurement.cardScrollLeft).toBe(0);
+  expect(measurement.overflowX).toBe("clip");
+  expect(measurement.outOfBounds).toEqual([]);
+  expect(measurement.scrollWidth).toBe(375);
+  expect(measurement.clientWidth).toBe(375);
+}
+
 async function expectReducedMotion(page) {
   await expect.poll(function readsReducedMotionPreference() {
     return page.evaluate(function readReducedMotionPreference() {
@@ -219,4 +250,55 @@ test("reserved question IDs retain answers and score correctly", async function 
   await expectNoHorizontalOverflow(page);
   expect(monitor.scriptFailures).toEqual([]);
   expect(monitor.consoleIssues).toEqual([]);
+});
+
+test("keeps every V2 card at scrollLeft zero while controls receive focus", async function ({ page }) {
+  async function answerAndAdvance(choiceIndex, questionNumber) {
+    const choice = page.locator("input[name=q" + questionNumber + "]").nth(choiceIndex);
+    await choice.focus();
+    await expectVisibleCardFitsViewport(page);
+    await choice.check();
+    await page.locator("#next-button").focus();
+    await expectVisibleCardFitsViewport(page);
+    await page.locator("#next-button").click();
+  }
+
+  async function openResult(choices) {
+    await page.goto("./");
+    await page.locator("#start-button").focus();
+    await expectVisibleCardFitsViewport(page);
+    await page.locator("#start-button").click();
+    for (let questionNumber = 1; questionNumber <= choices.length; questionNumber += 1) {
+      await answerAndAdvance(choices[questionNumber - 1], questionNumber);
+    }
+    await expect(page.locator("#result-screen")).toBeVisible();
+    await page.locator("#restart-button").focus();
+    await expectVisibleCardFitsViewport(page);
+  }
+
+  await page.goto("./");
+  await page.locator("#start-button").focus();
+  await expectVisibleCardFitsViewport(page);
+  await page.locator("#start-button").click();
+  await expectQuestionFocus(page, "今朝、目覚めたときの感覚に近いものは？");
+  await page.locator("input[name=q1]").first().focus();
+  await expectVisibleCardFitsViewport(page);
+  await page.locator("input[name=q1]").first().check();
+  await page.locator("#next-button").focus();
+  await expectVisibleCardFitsViewport(page);
+  await page.locator("#next-button").click();
+  for (let questionNumber = 2; questionNumber <= 6; questionNumber += 1) {
+    await answerAndAdvance(0, questionNumber);
+  }
+  await expectQuestionFocus(page, "今のあなたに、いちばんしっくりくる言葉は？");
+  await page.locator("input[name=q7]").first().focus();
+  await expectVisibleCardFitsViewport(page);
+  await page.locator("#previous-button").focus();
+  await expectVisibleCardFitsViewport(page);
+  await page.locator("#next-button").focus();
+  await expectVisibleCardFitsViewport(page);
+
+  await openResult([0, 2, 1, 2, 1, 2, 0]);
+  await openResult([1, 1, 2, 0, 0, 1, 2]);
+  await openResult([2, 0, 0, 1, 2, 0, 1]);
 });
