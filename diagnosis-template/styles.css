@@ -117,6 +117,72 @@ input {
   align-content: center;
 }
 
+#start-screen > *,
+#result-screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+.start-motion,
+.result-motion {
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: 0;
+  pointer-events: none;
+}
+
+.shirodhara-drop,
+#start-screen:not(:has(.start-motion)) #page-title::after {
+  position: absolute;
+  top: -1.2rem;
+  right: 1.5rem;
+  width: 2px;
+  height: 4.5rem;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--primary) 54%, transparent));
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: top;
+  animation: shirodhara-drop 2.7s ease-in-out 1 both;
+}
+
+#start-screen:not(:has(.start-motion)) #page-title::after,
+#result-screen:not(:has(.result-motion))::before,
+#result-screen:not(:has(.result-motion)) #result-title::after {
+  content: "";
+}
+
+.result-ripple,
+#result-screen:not(:has(.result-motion))::before {
+  position: absolute;
+  z-index: 0;
+  right: 1.5rem;
+  bottom: 1.8rem;
+  width: 6.5rem;
+  height: 2.3rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 32%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.35);
+  animation: result-ripple 1.8s ease-out 120ms 1 both;
+}
+
+.result-flame,
+#result-screen:not(:has(.result-motion)) #result-title::after {
+  position: absolute;
+  top: 0.15rem;
+  right: -1.15rem;
+  width: 0.7rem;
+  height: 1.05rem;
+  border-radius: 70% 30% 65% 35% / 68% 40% 60% 32%;
+  background: linear-gradient(to top, color-mix(in srgb, var(--primary) 76%, #f7c77a), #fff4cc);
+  pointer-events: none;
+  opacity: 0.55;
+  transform-origin: center bottom;
+  animation: result-flame 1.2s ease-in-out 240ms 1 both;
+}
+
 .eyebrow {
   position: relative;
   z-index: 1;
@@ -501,6 +567,59 @@ tbody td:last-child {
   }
 }
 
+@keyframes shirodhara-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-0.7rem) scaleY(0.2);
+  }
+  14% {
+    opacity: 0.72;
+    transform: translateY(0) scaleY(0.7);
+  }
+  76% {
+    opacity: 0.72;
+    transform: translateY(3.2rem) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(4rem) scaleY(0.8);
+  }
+}
+
+@keyframes result-ripple {
+  0% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  22% {
+    opacity: 0.42;
+    transform: scale(0.52);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes result-flame {
+  0% {
+    opacity: 0;
+    transform: translateY(0.12rem) rotate(-2deg) scale(0.9);
+  }
+  30% {
+    opacity: 0.6;
+    transform: translateY(0) rotate(2deg) scale(1);
+  }
+  62% {
+    opacity: 0.6;
+    transform: translateY(-0.04rem) rotate(-2deg) scale(0.98);
+  }
+  100% {
+    opacity: 0.55;
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+
 [hidden] {
   display: none !important;
 }
@@ -542,5 +661,32 @@ tbody td:last-child {
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .shirodhara-drop,
+  #start-screen:not(:has(.start-motion)) #page-title::after,
+  .result-ripple,
+  #result-screen:not(:has(.result-motion))::before,
+  .result-flame,
+  #result-screen:not(:has(.result-motion)) #result-title::after {
+    animation: none !important;
+  }
+
+  .shirodhara-drop,
+  #start-screen:not(:has(.start-motion)) #page-title::after {
+    opacity: 0.45;
+    transform: translateY(2.7rem) scaleY(0.65);
+  }
+
+  .result-ripple,
+  #result-screen:not(:has(.result-motion))::before {
+    opacity: 0.16;
+    transform: scale(0.7);
+  }
+
+  .result-flame,
+  #result-screen:not(:has(.result-motion)) #result-title::after {
+    opacity: 0.55;
+    transform: none;
   }
 }

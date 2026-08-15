@@ -96,8 +96,79 @@ async function expectReducedMotion(page) {
   }).toBe(true);
 }
 
+async function readV2Motion(page, selector, pseudoElement) {
+  return page.locator(selector).evaluate(function readMotion(element, pseudo) {
+    const style = getComputedStyle(element, pseudo);
+    return {
+      animationName: style.animationName,
+      animationDuration: style.animationDuration,
+      animationIterationCount: style.animationIterationCount,
+      pointerEvents: style.pointerEvents
+    };
+  }, pseudoElement);
+}
+
+async function expectStaticV2Motion(page, selector, pseudoElement) {
+  const motion = await readV2Motion(page, selector, pseudoElement);
+  expect(motion.animationName).toBe("none");
+  expect(motion.pointerEvents).toBe("none");
+}
+
 test.beforeEach(async function enableReducedMotion({ page }) {
   await page.emulateMedia({ reducedMotion: "reduce" });
+});
+
+test("plays one-shot V2 motion only on the start and result screens", async function ({ page }) {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("./");
+
+  const templatePage = await page.context().newPage();
+  await templatePage.emulateMedia({ reducedMotion: "reduce" });
+  await templatePage.goto("./diagnosis-template/");
+  await expect(templatePage.locator(".start-motion")).toHaveAttribute("aria-hidden", "true");
+  await expect(templatePage.locator(".result-motion")).toHaveAttribute("aria-hidden", "true");
+  await expectStaticV2Motion(templatePage, ".shirodhara-drop");
+  await expectStaticV2Motion(templatePage, ".result-ripple");
+  await expectStaticV2Motion(templatePage, ".result-flame");
+  await templatePage.close();
+
+  const startMotion = await readV2Motion(page, "#page-title", "::after");
+  expect(startMotion).toEqual({
+    animationName: "shirodhara-drop",
+    animationDuration: "2.7s",
+    animationIterationCount: "1",
+    pointerEvents: "none"
+  });
+
+  await page.locator("#start-button").click();
+  expect((await readV2Motion(page, "#question-screen", "::before")).animationName).toBe("none");
+  for (let questionNumber = 1; questionNumber <= 7; questionNumber += 1) {
+    await page.locator("input[name=q" + questionNumber + "]").first().check();
+    await page.locator("#next-button").click();
+  }
+
+  await expect(page.locator("#result-screen")).toBeVisible();
+  const resultMotion = [
+    await readV2Motion(page, "#result-screen", "::before"),
+    await readV2Motion(page, "#result-title", "::after")
+  ];
+  expect(resultMotion).toEqual([
+    {
+      animationName: "result-ripple",
+      animationDuration: "1.8s",
+      animationIterationCount: "1",
+      pointerEvents: "none"
+    },
+    {
+      animationName: "result-flame",
+      animationDuration: "1.2s",
+      animationIterationCount: "1",
+      pointerEvents: "none"
+    }
+  ]);
+  await page.locator("#restart-button").click();
+  await expect(page.locator("#start-screen")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
 });
 
 test("completes the published-root tuning-check flow in Edge at 375px", async function ({ page }) {
@@ -272,11 +343,18 @@ test("keeps every V2 card at scrollLeft zero while controls receive focus", asyn
       await answerAndAdvance(choices[questionNumber - 1], questionNumber);
     }
     await expect(page.locator("#result-screen")).toBeVisible();
+    await expectStaticV2Motion(page, "#result-screen", "::before");
+    await expectStaticV2Motion(page, "#result-title", "::after");
     await page.locator("#restart-button").focus();
+    await expectVisibleCardFitsViewport(page);
+    await page.locator("#restart-button").click();
+    await expect(page.locator("#start-screen")).toBeVisible();
+    await expectStaticV2Motion(page, "#page-title", "::after");
     await expectVisibleCardFitsViewport(page);
   }
 
   await page.goto("./");
+  await expectStaticV2Motion(page, "#page-title", "::after");
   await page.locator("#start-button").focus();
   await expectVisibleCardFitsViewport(page);
   await page.locator("#start-button").click();
