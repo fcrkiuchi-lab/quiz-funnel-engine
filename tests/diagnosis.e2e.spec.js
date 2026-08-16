@@ -142,56 +142,58 @@ test("plays one-shot V2 motion only on the start and result screens", async func
   await templatePage.goto("./diagnosis-template/");
   await expect(templatePage.locator(".start-motion")).toHaveAttribute("aria-hidden", "true");
   await expect(templatePage.locator(".result-motion")).toHaveAttribute("aria-hidden", "true");
-  await expectStaticV2Motion(templatePage, ".shirodhara-drop");
-  await expectStaticV2Motion(templatePage, ".result-ripple");
-  await expectStaticV2Motion(templatePage, ".result-flame");
+  await expectStaticV2Motion(templatePage, ".shirodhara-illustration");
+  await expectStaticV2Motion(templatePage, ".singing-bowl-illustration");
+  await expectStaticV2Motion(templatePage, ".bowl-ripples");
+  expect(await templatePage.locator(".start-motion").innerHTML()).toBe(await page.locator(".start-motion").innerHTML());
+  expect(await templatePage.locator(".result-motion").innerHTML()).toBe(await page.locator(".result-motion").innerHTML());
   await templatePage.close();
 
-  const startMotion = await readV2Motion(page, "#page-title", "::after");
+  const startMotion = await readV2Motion(page, ".shirodhara-illustration");
   expect(startMotion).toEqual({
-    animationName: "shirodhara-drop",
+    animationName: "shirodhara-enter",
     animationDuration: "2.7s",
     animationIterationCount: "1",
     pointerEvents: "none"
   });
 
   await page.waitForTimeout(220);
-  const visibleStartMotion = await readV2AnimationProgress(page, "#page-title", "::after", "shirodhara-drop");
-  expect(visibleStartMotion.opacity).toBeGreaterThan(0.28);
+  const visibleStartMotion = await readV2AnimationProgress(page, ".shirodhara-illustration", undefined, "shirodhara-enter");
+  expect(visibleStartMotion.opacity).toBeGreaterThan(0.1);
   expect(visibleStartMotion.playState).toBe("running");
 
   await page.waitForTimeout(3000);
-  const settledStartMotion = await readV2AnimationProgress(page, "#page-title", "::after", "shirodhara-drop");
-  expect(settledStartMotion.opacity).toBeCloseTo(0.28, 2);
+  const settledStartMotion = await readV2AnimationProgress(page, ".shirodhara-illustration", undefined, "shirodhara-enter");
+  expect(settledStartMotion.opacity).toBeCloseTo(0.48, 2);
 
   await page.locator("#start-button").click();
-  expect((await readV2Motion(page, "#question-screen", "::before")).animationName).toBe("none");
+  await expect(page.locator("#question-screen .start-motion, #question-screen .result-motion")).toHaveCount(0);
   for (let questionNumber = 1; questionNumber <= 7; questionNumber += 1) {
     await page.locator("input[name=q" + questionNumber + "]").first().check();
     await page.locator("#next-button").click();
   }
 
   await expect(page.locator("#result-screen")).toBeVisible();
-  const freshRipple = await readV2AnimationProgress(page, "#result-screen", "::before", "result-ripple");
-  const freshFlame = await readV2AnimationProgress(page, "#result-title", "::after", "result-flame");
+  const freshBowl = await readV2AnimationProgress(page, ".singing-bowl-illustration", undefined, "singing-bowl-enter");
+  const freshRipple = await readV2AnimationProgress(page, ".bowl-ripples", undefined, "bowl-ripple");
+  expect(freshBowl.playState).toBe("running");
   expect(freshRipple.playState).toBe("running");
-  expect(freshFlame.playState).toBe("running");
+  expect(freshBowl.currentTime).toBeLessThan(800);
   expect(freshRipple.currentTime).toBeLessThan(800);
-  expect(freshFlame.currentTime).toBeLessThan(800);
   const resultMotion = [
-    await readV2Motion(page, "#result-screen", "::before"),
-    await readV2Motion(page, "#result-title", "::after")
+    await readV2Motion(page, ".singing-bowl-illustration"),
+    await readV2Motion(page, ".bowl-ripples")
   ];
   expect(resultMotion).toEqual([
     {
-      animationName: "result-ripple",
+      animationName: "singing-bowl-enter",
       animationDuration: "1.8s",
       animationIterationCount: "1",
       pointerEvents: "none"
     },
     {
-      animationName: "result-flame",
-      animationDuration: "1.2s",
+      animationName: "bowl-ripple",
+      animationDuration: "1.8s",
       animationIterationCount: "1",
       pointerEvents: "none"
     }
@@ -373,18 +375,18 @@ test("keeps every V2 card at scrollLeft zero while controls receive focus", asyn
       await answerAndAdvance(choices[questionNumber - 1], questionNumber);
     }
     await expect(page.locator("#result-screen")).toBeVisible();
-    await expectStaticV2Motion(page, "#result-screen", "::before");
-    await expectStaticV2Motion(page, "#result-title", "::after");
+    await expectStaticV2Motion(page, ".singing-bowl-illustration");
+    await expectStaticV2Motion(page, ".bowl-ripples");
     await page.locator("#restart-button").focus();
     await expectVisibleCardFitsViewport(page);
     await page.locator("#restart-button").click();
     await expect(page.locator("#start-screen")).toBeVisible();
-    await expectStaticV2Motion(page, "#page-title", "::after");
+    await expectStaticV2Motion(page, ".shirodhara-illustration");
     await expectVisibleCardFitsViewport(page);
   }
 
   await page.goto("./");
-  await expectStaticV2Motion(page, "#page-title", "::after");
+  await expectStaticV2Motion(page, ".shirodhara-illustration");
   await page.locator("#start-button").focus();
   await expectVisibleCardFitsViewport(page);
   await page.locator("#start-button").click();

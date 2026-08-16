@@ -1,0 +1,39 @@
+name: Verification
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps msedge
+      - name: Run Node tests
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          npm test 2>&1 | tee reports/node-test.log
+      - name: Run Playwright tests
+        if: always()
+        run: |
+          set -o pipefail
+          npm run test:e2e -- --workers=1 2>&1 | tee reports/playwright.log
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-reports
+          path: |
+            reports/
+            test-results/
+          if-no-files-found: ignore

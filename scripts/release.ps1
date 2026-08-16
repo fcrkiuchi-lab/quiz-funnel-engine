@@ -51,6 +51,11 @@ try {
   if ($AllowedPath.Count -eq 0) {
     throw 'At least one allowed path is required.'
   }
+  $protectedPaths = @(
+    'diagnosis-template/config.js',
+    'diagnosis-template/engine.js',
+    'diagnosis-template/app.js'
+  )
 
   & node 'tests/calculator.test.js'
   if ($LASTEXITCODE -ne 0) { throw 'Calculator tests failed.' }
@@ -73,6 +78,10 @@ try {
 
   $approvedPaths = @($AllowedPath + 'release-marker.json' | Sort-Object -Unique)
   $changedPaths = Get-ChangedPath
+  $protectedChanges = @($changedPaths | Where-Object { $_ -in $protectedPaths })
+  if ($protectedChanges.Count -gt 0) {
+    throw "Protected files cannot be released: $($protectedChanges -join ', ')"
+  }
   $outsideScope = @($changedPaths | Where-Object { $_ -notin $approvedPaths })
   if ($outsideScope.Count -gt 0) {
     throw "Changes outside the approved paths were found: $($outsideScope -join ', ')"

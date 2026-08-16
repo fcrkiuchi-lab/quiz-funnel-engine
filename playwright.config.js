@@ -1,7 +1,8 @@
 "use strict";
 
 const { defineConfig } = require("@playwright/test");
-const baseURL = process.env.BASE_URL || "http://127.0.0.1:4173";
+const localPort = process.env.PLAYWRIGHT_PORT || "4174";
+const baseURL = process.env.BASE_URL || "http://127.0.0.1:" + localPort;
 const isLocalRun = !process.env.BASE_URL;
 
 const config = {
@@ -25,8 +26,12 @@ const config = {
 if (isLocalRun) {
   config.webServer = {
     command: "node tests/static-server.js",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: false,
+    env: {
+      ...process.env,
+      PORT: localPort
+    },
+    url: baseURL,
+    reuseExistingServer: !process.env.CI,
     timeout: 10000
   };
 }
