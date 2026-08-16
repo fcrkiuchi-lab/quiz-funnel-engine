@@ -215,58 +215,61 @@ test("completes the published-root tuning-check flow in Edge at 375px", async fu
         typeof globalThis.DiagnosisEngine === "object";
     });
   }).toBe(true);
-  await expect(page.locator("#start-brand")).toHaveText("Salon de Krishna");
+  await expect(page.locator("#start-brand")).toHaveText("");
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("button", { name: "チェックをはじめる" }).click();
-  await expectQuestionFocus(page, "今朝、目覚めたときの感覚に近いものは？");
+  await expectQuestionFocus(page, "Q1．今のあなたに一番近いのは？");
   await expect(page.locator("#question-screen .brand")).toHaveCount(0);
   await expect(page.locator("#progress-bar")).toHaveAttribute("aria-labelledby", "progress-text");
-  await page.getByLabel("体がこわばり、動き出すまで少し時間がいる").check();
+  await page.getByLabel("A．頭の中が忙しく、あれこれ考えている").check();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "今、身体が求めているものは？");
-  await page.getByLabel("静かな休息と、ゆっくりした呼吸").check();
+  await expectQuestionFocus(page, "Q2．今、どんな時間があったら嬉しい？");
+  await page.getByLabel("B．静かな場所でひと息ついて、頭を休めたい").check();
 
   await page.getByRole("button", { name: "前の質問へ" }).click();
-  await expectQuestionFocus(page, "今朝、目覚めたときの感覚に近いものは？");
-  await expect(page.getByLabel("体がこわばり、動き出すまで少し時間がいる")).toBeChecked();
+  await expectQuestionFocus(page, "Q1．今のあなたに一番近いのは？");
+  await expect(page.getByLabel("A．頭の中が忙しく、あれこれ考えている")).toBeChecked();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "今、身体が求めているものは？");
-  await expect(page.getByLabel("静かな休息と、ゆっくりした呼吸")).toBeChecked();
+  await expectQuestionFocus(page, "Q2．今、どんな時間があったら嬉しい？");
+  await expect(page.getByLabel("B．静かな場所でひと息ついて、頭を休めたい")).toBeChecked();
 
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "頭の中の様子に近いものは？");
-  await page.getByLabel("考えが滞って、切り替えにくい").check();
+  await expectQuestionFocus(page, "Q3．今の気分を「空」で表すなら？");
+  await page.getByLabel("A．風が吹いて、雲がどんどん流れている空").check();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "人と向き合うなら、今はどれに近い？");
-  await page.getByLabel("自分のペースを取り戻したい").check();
+  await expectQuestionFocus(page, "Q4．今、一番惹かれる景色は？");
+  await page.getByLabel("A．木々が風に揺れる、広々とした草原").check();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "今、自由な10分があったら？");
-  await page.getByLabel("何もせず、ただほどけたい").check();
+  await expectQuestionFocus(page, "Q5．今日の身体に近いのは？");
+  await page.getByLabel("B．熱がこもる、または肩や身体に力が入りやすい感じ").check();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "今日の終わりに求めるのは？");
-  await page.getByLabel("内側が整っていく感覚").check();
+  await expectQuestionFocus(page, "Q6．もし今、ひとつだけ手放せるとしたら？");
+  await page.getByLabel("A．頭の中の「あれもしなきゃ、これもしなきゃ」").check();
   await page.getByRole("button", { name: "次の質問へ" }).click();
-  await expectQuestionFocus(page, "今のあなたに、いちばんしっくりくる言葉は？");
-  await page.getByLabel("流れを取り戻したい").check();
+  await expectQuestionFocus(page, "Q7．最後は直感で✨\n今、あなたが一番惹かれる言葉は？");
+  await page.getByLabel("A．ゆっくり。温かく。もう一度。").check();
   await page.getByRole("button", { name: "結果を見る" }).click();
 
   await expect(page.locator("#result-screen")).toBeVisible();
-  await expect(page.locator("#result-brand")).toHaveText("Salon de Krishna");
-  await expect(page.locator("#result-title")).toHaveText("めぐる｜今日の調律");
-  await expect(page.locator("#result-description")).toHaveText("これは固定的な分類ではなく、今日のあなたの状態を見つめるためのチェックです。心と身体の状態は、日々変化します。");
-  await expect(page.locator("#result-rows tr")).toHaveText([
-    /めぐる\s*6\s*75\.0%/,
-    /やわらぐ\s*2\s*25\.0%/,
-    /めざめる\s*0\s*0\.0%/
-  ]);
+  await expect(page.locator("#result-brand")).toHaveText("");
+  await expect(page.locator("#result-title")).toHaveText("✨ 今日のあなたに必要な調律は……");
+  await expect(page.locator("#result-description")).toBeHidden();
+  await expect(page.locator(".primary-axis")).toHaveCount(1);
+  await expect(page.locator(".primary-axis h3")).toHaveText("🌿 めぐる");
+  await expect(page.locator(".result-emphasis")).toHaveText("「動くこと」より「落ち着くこと」が必要なのかもしれません。");
+  await expect(page.locator(".product-details h4")).toHaveText("Ayurveda 調律ハーブ紅茶「めぐる」");
+  await expect(page.locator(".product-details")).toContainText("ヴァータ");
+  await expect(page.locator(".product-details")).toContainText("30g（リーフティー）");
+  await expect(page.locator(".common-concept h3")).toHaveText("Ayurveda 調律茶");
+  await expect(page.locator(".common-concept")).toContainText("3つの調律から、今日のあなたに寄り添う一杯を。");
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("button", { name: "もう一度回答する" }).click();
   await expect(page.locator("#start-screen")).toBeVisible();
   await expect(page.getByRole("button", { name: "チェックをはじめる" })).toBeFocused();
   await page.getByRole("button", { name: "チェックをはじめる" }).click();
-  await expectQuestionFocus(page, "今朝、目覚めたときの感覚に近いものは？");
+  await expectQuestionFocus(page, "Q1．今のあなたに一番近いのは？");
   await expect(page.locator('input[name="q1"]:checked')).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
 
@@ -346,10 +349,9 @@ test("reserved question IDs retain answers and score correctly", async function 
   await expect(page.getByLabel("第二軸へ1点")).toBeChecked();
   await page.getByRole("button", { name: "結果" }).click();
 
-  await expect(page.locator("#result-rows tr")).toHaveText([
-    /第一軸\s*2\s*66\.7%/,
-    /第二軸\s*1\s*33\.3%/
-  ]);
+  await expect(page.locator(".primary-axis h3")).toHaveText("第一軸");
+  await expect(page.locator(".primary-axis")).toContainText("第一軸の説明");
+  await expect(page.locator("#result-rows tr")).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
   expect(monitor.scriptFailures).toEqual([]);
   expect(monitor.consoleIssues).toEqual([]);
@@ -390,7 +392,7 @@ test("keeps every V2 card at scrollLeft zero while controls receive focus", asyn
   await page.locator("#start-button").focus();
   await expectVisibleCardFitsViewport(page);
   await page.locator("#start-button").click();
-  await expectQuestionFocus(page, "今朝、目覚めたときの感覚に近いものは？");
+  await expectQuestionFocus(page, "Q1．今のあなたに一番近いのは？");
   await page.locator("input[name=q1]").first().focus();
   await expectVisibleCardFitsViewport(page);
   await page.locator("input[name=q1]").first().check();
@@ -400,7 +402,7 @@ test("keeps every V2 card at scrollLeft zero while controls receive focus", asyn
   for (let questionNumber = 2; questionNumber <= 6; questionNumber += 1) {
     await answerAndAdvance(0, questionNumber);
   }
-  await expectQuestionFocus(page, "今のあなたに、いちばんしっくりくる言葉は？");
+  await expectQuestionFocus(page, "Q7．最後は直感で✨\n今、あなたが一番惹かれる言葉は？");
   await page.locator("input[name=q7]").first().focus();
   await expectVisibleCardFitsViewport(page);
   await page.locator("#previous-button").focus();

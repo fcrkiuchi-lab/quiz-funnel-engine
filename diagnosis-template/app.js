@@ -73,6 +73,42 @@
     return element;
   }
 
+  function appendProductDetail(parent, label, value) {
+    appendTextElement(parent, "dt", label);
+    appendTextElement(parent, "dd", value);
+  }
+
+  function renderProductDetails(parent, product) {
+    if (!product) {
+      return;
+    }
+    const productSection = document.createElement("section");
+    productSection.className = "product-details";
+    appendTextElement(productSection, "h4", product.name);
+    const details = document.createElement("dl");
+    appendProductDetail(details, "ドーシャ", product.dosha);
+    appendProductDetail(details, "五感", product.sense);
+    appendProductDetail(details, "内容量", product.volume);
+    appendProductDetail(details, "原材料", product.ingredients);
+    appendProductDetail(details, "特徴", product.feature);
+    appendProductDetail(details, "キーワード", product.keywords);
+    productSection.appendChild(details);
+    parent.appendChild(productSection);
+  }
+
+  function renderCommonConcept(parent, commonConcept) {
+    if (!commonConcept) {
+      return;
+    }
+    const conceptSection = document.createElement("section");
+    conceptSection.className = "common-concept";
+    appendTextElement(conceptSection, "h3", commonConcept.heading);
+    commonConcept.body.forEach(function renderConceptParagraph(text) {
+      appendTextElement(conceptSection, "p", text);
+    });
+    parent.appendChild(conceptSection);
+  }
+
   function showScreen(screen) {
     [startScreen, questionScreen, resultScreen].forEach(function hideScreen(currentScreen) {
       currentScreen.hidden = currentScreen !== screen;
@@ -99,7 +135,9 @@
     previousButton.textContent = config.labels.previous;
     restartButton.textContent = config.labels.restart;
     resultTitle.textContent = config.resultTitle;
-    document.getElementById("result-description").textContent = config.resultDescription;
+    const resultDescription = document.getElementById("result-description");
+    resultDescription.textContent = config.resultDescription;
+    resultDescription.hidden = !config.resultDescription || config.hideResultDescription;
   }
 
   function renderQuestion() {
@@ -142,23 +180,24 @@
     const primaryAxis = config.axes.find(function findPrimaryAxis(axis) {
       return axis.key === resolvePrimaryAxisKey(config, answers, result);
     });
-    resultTitle.textContent = primaryAxis.label + "｜" + config.resultTitle;
-    config.axes.forEach(function renderAxis(axis) {
-      const row = document.createElement("tr");
-      row.className = "result-row";
-      row.style.setProperty("--axis-percent", result.percentages[axis.key] + "%");
-      appendTextElement(row, "th", axis.label).scope = "row";
-      appendTextElement(row, "td", String(result.scores[axis.key]));
-      appendTextElement(row, "td", result.percentages[axis.key].toFixed(1) + "%", "result-percent");
-      resultRows.appendChild(row);
+    resultTitle.textContent = config.resultTitle;
 
-      const textCard = document.createElement("section");
-      textCard.className = "axis-text";
-      textCard.style.setProperty("--axis-percent", result.percentages[axis.key] + "%");
-      appendTextElement(textCard, "h3", axis.label);
-      appendTextElement(textCard, "p", axis.resultText);
-      resultTexts.appendChild(textCard);
-    });
+    const textCard = document.createElement("section");
+    textCard.className = "axis-text primary-axis";
+    appendTextElement(textCard, "h3", primaryAxis.heading || primaryAxis.label);
+    if (primaryAxis.lead) {
+      appendTextElement(textCard, "p", primaryAxis.lead, "result-lead");
+    }
+    if (primaryAxis.body) {
+      primaryAxis.body.forEach(function renderBodyParagraph(text) {
+        appendTextElement(textCard, "p", text, text === primaryAxis.emphasis ? "result-emphasis" : "");
+      });
+    } else {
+      appendTextElement(textCard, "p", primaryAxis.resultText);
+    }
+    renderProductDetails(textCard, primaryAxis.product);
+    resultTexts.appendChild(textCard);
+    renderCommonConcept(resultTexts, config.commonConcept);
     showScreen(resultScreen);
     resultTitle.focus();
   }

@@ -27,12 +27,40 @@ const singleMeguruAnswers = {
 
 test("V2設定は7問・各3択として検証できる", function () {
   assert.equal(validateConfig(config), config);
-  assert.equal(config.title, "今日の調律チェック");
-  assert.equal(config.brand, "Salon de Krishna");
+  assert.equal(config.title, "🌿 今日の調律チェック");
+  assert.equal(config.eyebrow, "― 今日は、どんな私で過ごしたい？ ―");
+  assert.equal(config.description, "※これは体質を決める診断ではなく、「今日の自分に必要な調律」を見つけるチェックです。");
+  assert.equal(config.resultTitle, "✨ 今日のあなたに必要な調律は……");
   assert.equal(config.questions.length, 7);
   config.questions.forEach(function verifyChoiceCount(question) {
     assert.equal(question.choices.length, 3);
   });
+});
+
+test("質問はA/B/C順にめぐる・やわらぐ・めざめるへ配点する", function () {
+  config.questions.forEach(function verifyQuestionChoices(question, questionIndex) {
+    assert.deepEqual(question.choices.map(function readAxis(choice) { return choice.id; }), ["meguru", "yawaragu", "mezameru"]);
+    const expectedScore = questionIndex === 6 ? 2 : 1;
+    assert.deepEqual(question.choices.map(function readScore(choice) {
+      return choice.scores[choice.id];
+    }), [expectedScore, expectedScore, expectedScore]);
+  });
+});
+
+test("結果には各軸の商品情報と共通コンセプトを持つ", function () {
+  assert.deepEqual(config.axes.map(function readProduct(axis) {
+    return {
+      heading: axis.heading,
+      name: axis.product.name,
+      keywords: axis.product.keywords
+    };
+  }), [
+    { heading: "🌿 めぐる", name: "Ayurveda 調律ハーブ紅茶「めぐる」", keywords: "ゆっくり・温かく・繰り返す" },
+    { heading: "🌸 やわらぐ ― ピッタ", name: "Ayurveda 調律ハーブ紅茶「やわらぐ」", keywords: "緩める・冷ます・手放す" },
+    { heading: "🌾 めざめる ― カパ", name: "Ayurveda 調律ハーブ紅茶「めざめる」", keywords: "動く・変える・軽くする" }
+  ]);
+  assert.equal(config.commonConcept.heading, "Ayurveda 調律茶");
+  assert.equal(config.commonConcept.body[0], "五感を調律し、本来のあなたへ。");
 });
 
 test("単独最大時はQ7が別軸でも単独最大を返す", function () {
@@ -126,7 +154,8 @@ test("新デザインが機能を妨げないモーション規則を持つ", fu
   assert.match(styles, /\.screen:not\(\[hidden\]\)/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
   assert.doesNotMatch(styles, /animation-iteration-count:\s*infinite/);
-  assert.match(app, /--axis-percent/);
+  assert.match(app, /renderProductDetails/);
+  assert.match(app, /renderCommonConcept/);
   assert.match(app, /resolvePrimaryAxisKey/);
 });
 

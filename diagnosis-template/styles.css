@@ -521,6 +521,12 @@ tbody td:last-child {
   margin-top: 22px;
 }
 
+#result-screen > .eyebrow,
+#result-screen .table-wrap,
+#result-screen .rounding-note {
+  display: none;
+}
+
 .axis-text {
   position: relative;
   overflow: hidden;
@@ -543,6 +549,57 @@ tbody td:last-child {
 }
 
 .axis-text p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.axis-text p + p,
+.common-concept p + p {
+  margin-top: 0.5rem;
+}
+
+.result-lead {
+  font-weight: 700;
+}
+
+.result-emphasis {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.product-details,
+.common-concept {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+}
+
+.product-details h4,
+.common-concept h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.product-details dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.product-details dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.product-details dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+
+.common-concept p {
   margin: 0;
   line-height: 1.6;
 }
