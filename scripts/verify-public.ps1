@@ -33,7 +33,7 @@ try {
   for ($attempt = 1; $attempt -le $MaxAttempts; $attempt += 1) {
     try {
       $cacheBuster = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-      $publicMarker = (Invoke-WebRequest -UseBasicParsing "$markerUrl`?v=$cacheBuster" -TimeoutSec 20).Content | ConvertFrom-Json
+      $publicMarker = (Invoke-WebRequest -UseBasicParsing "$markerUrl`?v=$cacheBuster" -TimeoutSec 20).Content.TrimStart([char]0xFEFF) | ConvertFrom-Json
       $matches = ($localMarker.schemaVersion -eq $publicMarker.schemaVersion) -and
         ($localMarker.generatedAt -eq $publicMarker.generatedAt) -and
         ($localMarker.branch -eq $publicMarker.branch)
