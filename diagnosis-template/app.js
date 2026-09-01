@@ -177,6 +177,13 @@
   function renderResult(result) {
     resultRows.replaceChildren();
     resultTexts.replaceChildren();
+    config.axes.forEach(function renderAxisScore(axis) {
+      const row = document.createElement("tr");
+      appendTextElement(row, "th", axis.label).scope = "row";
+      appendTextElement(row, "td", String(result.scores[axis.key]));
+      appendTextElement(row, "td", result.percentages[axis.key].toFixed(1) + "%");
+      resultRows.appendChild(row);
+    });
     const primaryAxis = config.axes.find(function findPrimaryAxis(axis) {
       return axis.key === resolvePrimaryAxisKey(config, answers, result);
     });
