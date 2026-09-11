@@ -258,6 +258,12 @@ test("completes the published-root tuning-check flow in Edge at 375px", async fu
   await expect(page.locator(".primary-axis")).toHaveCount(1);
   await expect(page.locator(".primary-axis h3")).toHaveText("🌿 めぐる");
   await expect(page.locator(".result-emphasis")).toHaveText("「動くこと」より「落ち着くこと」が必要なのかもしれません。");
+  await expect(page.locator("#result-rows tr")).toHaveCount(3);
+  await expect(page.locator("#result-rows tr")).toHaveText([
+    "めぐる675.0%",
+    "やわらぐ225.0%",
+    "めざめる00.0%"
+  ]);
   await expect(page.locator(".product-details h4")).toHaveText("Ayurveda 調律ハーブ紅茶「めぐる」");
   await expect(page.locator(".product-details")).toContainText("ヴァータ");
   await expect(page.locator(".product-details")).toContainText("30g（リーフティー）");
@@ -351,7 +357,10 @@ test("reserved question IDs retain answers and score correctly", async function 
 
   await expect(page.locator(".primary-axis h3")).toHaveText("第一軸");
   await expect(page.locator(".primary-axis")).toContainText("第一軸の説明");
-  await expect(page.locator("#result-rows tr")).toHaveCount(0);
+  await expect(page.locator("#result-rows tr")).toHaveText([
+    "第一軸266.7%",
+    "第二軸133.3%"
+  ]);
   await expectNoHorizontalOverflow(page);
   expect(monitor.scriptFailures).toEqual([]);
   expect(monitor.consoleIssues).toEqual([]);

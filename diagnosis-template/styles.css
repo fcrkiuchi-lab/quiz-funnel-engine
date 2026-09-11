@@ -522,7 +522,6 @@ tbody td:last-child {
 }
 
 #result-screen > .eyebrow,
-#result-screen .table-wrap,
 #result-screen .rounding-note {
   display: none;
 }
