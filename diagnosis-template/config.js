@@ -128,7 +128,8 @@
         choices: [
           { id: "meguru", label: "A．頭の中が忙しく、あれこれ考えている", scores: { meguru: 1 } },
           { id: "yawaragu", label: "B．やることが多く、ちょっと力が入っている", scores: { yawaragu: 1 } },
-          { id: "mezameru", label: "C．なんとなく重くて、動き出すのがおっくう", scores: { mezameru: 1 } }
+          { id: "mezameru", label: "C．なんとなく重くて、動き出すのがおっくう", scores: { mezameru: 1 } },
+          { id: "none", label: "D．どれにも当てはまらない", scores: { meguru: 0, yawaragu: 0, mezameru: 0 } }
         ]
       },
       {
@@ -137,7 +138,8 @@
         choices: [
           { id: "meguru", label: "A．温かい飲み物をゆっくり飲んで、ほっとしたい", scores: { meguru: 1 } },
           { id: "yawaragu", label: "B．静かな場所でひと息ついて、頭を休めたい", scores: { yawaragu: 1 } },
-          { id: "mezameru", label: "C．音楽を聴いたり、少し歩いたり、気分を変えたい", scores: { mezameru: 1 } }
+          { id: "mezameru", label: "C．音楽を聴いたり、少し歩いたり、気分を変えたい", scores: { mezameru: 1 } },
+          { id: "none", label: "D．どれにも当てはまらない", scores: { meguru: 0, yawaragu: 0, mezameru: 0 } }
         ]
       },
       {
@@ -146,7 +148,8 @@
         choices: [
           { id: "meguru", label: "A．風が吹いて、雲がどんどん流れている空", scores: { meguru: 1 } },
           { id: "yawaragu", label: "B．太陽がまぶしい、澄みきった空", scores: { yawaragu: 1 } },
-          { id: "mezameru", label: "C．朝もやがかかった、静かな空", scores: { mezameru: 1 } }
+          { id: "mezameru", label: "C．朝もやがかかった、静かな空", scores: { mezameru: 1 } },
+          { id: "none", label: "D．どれにも当てはまらない", scores: { meguru: 0, yawaragu: 0, mezameru: 0 } }
         ]
       },
       {
@@ -155,7 +158,8 @@
         choices: [
           { id: "meguru", label: "A．木々が風に揺れる、広々とした草原", scores: { meguru: 1 } },
           { id: "yawaragu", label: "B．光がきらめく、涼しげな水辺", scores: { yawaragu: 1 } },
-          { id: "mezameru", label: "C．緑が深く、生命力を感じる森", scores: { mezameru: 1 } }
+          { id: "mezameru", label: "C．緑が深く、生命力を感じる森", scores: { mezameru: 1 } },
+          { id: "none", label: "D．どれにも当てはまらない", scores: { meguru: 0, yawaragu: 0, mezameru: 0 } }
         ]
       },
       {
@@ -164,7 +168,8 @@
         choices: [
           { id: "meguru", label: "A．落ち着かず、そわそわする感じ", scores: { meguru: 1 } },
           { id: "yawaragu", label: "B．熱がこもる、または肩や身体に力が入りやすい感じ", scores: { yawaragu: 1 } },
-          { id: "mezameru", label: "C．どっしりしていて、少し重たい感じ", scores: { mezameru: 1 } }
+          { id: "mezameru", label: "C．どっしりしていて、少し重たい感じ", scores: { mezameru: 1 } },
+          { id: "none", label: "D．どれにも当てはまらない", scores: { meguru: 0, yawaragu: 0, mezameru: 0 } }
         ]
       },
       {
@@ -173,7 +178,8 @@
         choices: [
           { id: "meguru", label: "A．頭の中の「あれもしなきゃ、これもしなきゃ」", scores: { meguru: 1 } },
           { id: "yawaragu", label: "B．「ちゃんとしなきゃ」という頑張り", scores: { yawaragu: 1 } },
-          { id: "mezameru", label: "C．「あとでいいや」という重たい気分", scores: { mezameru: 1 } }
+          { id: "mezameru", label: "C．「あとでいいや」という重たい気分", scores: { mezameru: 1 } },
+          { id: "none", label: "D．どれにも当てはまらない", scores: { meguru: 0, yawaragu: 0, mezameru: 0 } }
         ]
       },
       {
@@ -182,7 +188,8 @@
         choices: [
           { id: "meguru", label: "A．ゆっくり。温かく。もう一度。", scores: { meguru: 2 } },
           { id: "yawaragu", label: "B．緩める。冷ます。手放す。", scores: { yawaragu: 2 } },
-          { id: "mezameru", label: "C．動く。変える。軽くする。", scores: { mezameru: 2 } }
+          { id: "mezameru", label: "C．動く。変える。軽くする。", scores: { mezameru: 2 } },
+          { id: "none", label: "D．どれにも当てはまらない", scores: { meguru: 0, yawaragu: 0, mezameru: 0 } }
         ]
       }
     ]

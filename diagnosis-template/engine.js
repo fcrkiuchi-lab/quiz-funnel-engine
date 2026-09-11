@@ -87,8 +87,11 @@
           throw new Error("選択肢の加点設定が必要です。");
         }
 
-        let positiveScoreExists = false;
-        Object.keys(choice.scores).forEach(function validateScore(axisKey) {
+        const scoreKeys = Object.keys(choice.scores);
+        if (scoreKeys.length === 0) {
+          throw new Error("選択肢の加点設定が必要です。");
+        }
+        scoreKeys.forEach(function validateScore(axisKey) {
           const score = choice.scores[axisKey];
           if (!axisKeys.has(axisKey)) {
             throw new Error("定義されていない結果軸へは加点できません。");
@@ -96,12 +99,7 @@
           if (!Number.isSafeInteger(score) || score < 0) {
             throw new Error("加点値は0以上の安全な整数にしてください。");
           }
-          positiveScoreExists = positiveScoreExists || score > 0;
         });
-
-        if (!positiveScoreExists) {
-          throw new Error("各選択肢は少なくとも1点を加点してください。");
-        }
       });
     });
 

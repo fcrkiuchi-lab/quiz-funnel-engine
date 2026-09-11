@@ -25,7 +25,7 @@ const singleMeguruAnswers = {
   q7: "mezameru"
 };
 
-test("V2設定は7問・各3択として検証できる", function () {
+test("V2設定は7問・各4択として検証できる", function () {
   assert.equal(validateConfig(config), config);
   assert.equal(config.title, "🌿 今日の調律チェック");
   assert.equal(config.eyebrow, "― 今日は、どんな私で過ごしたい？ ―");
@@ -33,18 +33,35 @@ test("V2設定は7問・各3択として検証できる", function () {
   assert.equal(config.resultTitle, "✨ 今日のあなたに必要な調律は……");
   assert.equal(config.questions.length, 7);
   config.questions.forEach(function verifyChoiceCount(question) {
-    assert.equal(question.choices.length, 3);
+    assert.equal(question.choices.length, 4);
   });
 });
 
-test("質問はA/B/C順にめぐる・やわらぐ・めざめるへ配点する", function () {
+test("質問はA/B/Cの既存配点とDの全軸0点を持つ", function () {
   config.questions.forEach(function verifyQuestionChoices(question, questionIndex) {
-    assert.deepEqual(question.choices.map(function readAxis(choice) { return choice.id; }), ["meguru", "yawaragu", "mezameru"]);
+    assert.deepEqual(question.choices.map(function readAxis(choice) { return choice.id; }), ["meguru", "yawaragu", "mezameru", "none"]);
     const expectedScore = questionIndex === 6 ? 2 : 1;
-    assert.deepEqual(question.choices.map(function readScore(choice) {
+    assert.deepEqual(question.choices.slice(0, 3).map(function readScore(choice) {
       return choice.scores[choice.id];
     }), [expectedScore, expectedScore, expectedScore]);
+    assert.equal(question.choices[3].label, "D．どれにも当てはまらない");
+    assert.deepEqual(question.choices[3].scores, { meguru: 0, yawaragu: 0, mezameru: 0 });
   });
+});
+
+test("0点回答を含んでも他回答を従来どおり採点する", function () {
+  const answers = Object.assign({}, singleMeguruAnswers, { q2: "none" });
+  const result = calculateDiagnosis(config, answers);
+  assert.deepEqual(result.scores, { meguru: 4, yawaragu: 1, mezameru: 2 });
+});
+
+test("全問noneでは合計0エラーになる", function () {
+  const answers = Object.fromEntries(config.questions.map(function makeNoneAnswer(question) {
+    return [question.id, "none"];
+  }));
+  assert.throws(function () {
+    calculateDiagnosis(config, answers);
+  }, /全軸の合計点/);
 });
 
 test("結果には各軸の商品情報と共通コンセプトを持つ", function () {
