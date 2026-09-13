@@ -2,6 +2,9 @@
   "use strict";
 
   function resolvePrimaryAxisKey(config, answers, result) {
+    if (result.outcome === "neutral" || result.leaders.length === 0) {
+      return null;
+    }
     if (result.leaders.length === 1 || !config.tieBreakerQuestionId) {
       return result.leaders[0];
     }
@@ -35,8 +38,24 @@
     return result.leaders[0];
   }
 
+  // Image settings are optional and limited to files in this template's assets/.
+  // No arbitrary URL, data URI, or path traversal is accepted from a client config.
+  function safeVisual(visual) {
+    if (!visual || typeof visual.file !== "string" ||
+        !/^[a-zA-Z0-9][a-zA-Z0-9_-]*\.(?:png|jpg|jpeg|webp)$/.test(visual.file) ||
+        typeof visual.alt !== "string" || !visual.alt.trim()) {
+      return null;
+    }
+    return {
+      file: visual.file,
+      alt: visual.alt,
+      caption: typeof visual.caption === "string" ? visual.caption : "",
+      color: /^#[a-fA-F0-9]{6}$/.test(visual.color || "") ? visual.color : null
+    };
+  }
+
   if (typeof module === "object" && module.exports) {
-    module.exports = { resolvePrimaryAxisKey: resolvePrimaryAxisKey };
+    module.exports = { resolvePrimaryAxisKey: resolvePrimaryAxisKey, safeVisual: safeVisual };
   }
 
   if (!document) {
@@ -45,6 +64,7 @@
 
   const config = root.DiagnosisConfig;
   const engine = root.DiagnosisEngine;
+  const scriptUrl = document.currentScript ? document.currentScript.src : document.baseURI;
   const startScreen = document.getElementById("start-screen");
   const questionScreen = document.getElementById("question-screen");
   const resultScreen = document.getElementById("result-screen");
@@ -76,6 +96,67 @@
   function appendProductDetail(parent, label, value) {
     appendTextElement(parent, "dt", label);
     appendTextElement(parent, "dd", value);
+  }
+
+  function appendVisual(parent, visual, className) {
+    const safe = safeVisual(visual);
+    if (!safe) {
+      return null;
+    }
+    const figure = document.createElement("figure");
+    figure.className = className;
+    const picture = document.createElement("img");
+    picture.alt = safe.alt;
+    picture.decoding = "async";
+    picture.width = className === "start-visual" ? 1536 : 1536;
+    picture.height = className === "start-visual" ? 1024 : 1536;
+    picture.addEventListener("error", function hideUnavailableImage() {
+      figure.hidden = true;
+    });
+    picture.src = new URL("assets/" + safe.file, scriptUrl).href;
+    figure.appendChild(picture);
+    if (safe.caption) {
+      appendTextElement(figure, "figcaption", safe.caption);
+    }
+    parent.appendChild(figure);
+    return figure;
+  }
+
+  function renderPresentation() {
+    const presentation = config.presentation;
+    if (!presentation) {
+      return;
+    }
+    document.documentElement.classList.add("brand-presentation");
+    const questionBrand = appendTextElement(questionScreen, "p", config.brand || "", "brand question-brand");
+    questionScreen.prepend(questionBrand);
+    [document.getElementById("start-brand"), document.getElementById("result-brand"), questionBrand]
+      .forEach(function addLocation(brand) {
+        if (presentation.location) {
+          appendTextElement(brand, "span", presentation.location, "brand-location");
+        }
+      });
+    const hero = appendVisual(startScreen, presentation.startImage, "start-visual");
+    if (hero) {
+      startScreen.insertBefore(hero, document.getElementById("page-eyebrow"));
+    }
+    appendTextElement(document.getElementById("page-description"), "span",
+      "全" + config.questions.length + "問" + (presentation.duration ? "・" + presentation.duration : ""), "start-duration");
+    const arrow = appendTextElement(startButton, "span", "›", "start-arrow");
+    arrow.setAttribute("aria-hidden", "true");
+    if (presentation.notice) {
+      appendTextElement(startScreen, "p", presentation.notice, "start-notice");
+    }
+  }
+
+  function renderCta(parent, cta) {
+    if (!cta) {
+      return;
+    }
+    const link = appendTextElement(parent, "a", cta.label, "result-cta");
+    link.href = cta.url;
+    link.referrerPolicy = "no-referrer";
+    restartButton.classList.add("secondary-button");
   }
 
   function renderProductDetails(parent, product) {
@@ -177,16 +258,48 @@
   function renderResult(result) {
     resultRows.replaceChildren();
     resultTexts.replaceChildren();
+    resultScreen.style.removeProperty("--axis-color");
+    resultScreen.dataset.outcome = result.outcome || "scored";
+    delete resultScreen.dataset.axis;
+    restartButton.classList.remove("secondary-button");
+    if (result.outcome === "neutral") {
+      const neutral = config.neutralResult || {
+        title: "今回は判定を保留します",
+        body: ["今回の回答だけでは、特定の結果をおすすめする材料がありません。無理にタイプを決める必要はありません。"]
+      };
+      resultTitle.textContent = neutral.title;
+      const neutralCard = document.createElement("section");
+      neutralCard.className = "axis-text neutral-result";
+      neutral.body.forEach(function renderNeutralParagraph(text) {
+        appendTextElement(neutralCard, "p", text);
+      });
+      renderCta(neutralCard, neutral.cta);
+      resultTexts.appendChild(neutralCard);
+      showScreen(resultScreen);
+      resultTitle.focus();
+      return;
+    }
     const primaryAxis = config.axes.find(function findPrimaryAxis(axis) {
       return axis.key === resolvePrimaryAxisKey(config, answers, result);
     });
     resultTitle.textContent = config.resultTitle;
+    resultScreen.dataset.axis = primaryAxis.key;
+    const visual = safeVisual(primaryAxis.visual);
+    if (visual && visual.color) {
+      resultScreen.style.setProperty("--axis-color", visual.color);
+    }
 
     const textCard = document.createElement("section");
     textCard.className = "axis-text primary-axis";
     appendTextElement(textCard, "h3", primaryAxis.heading || primaryAxis.label);
+    if (config.presentation) {
+      appendVisual(textCard, primaryAxis.visual, "result-visual");
+    }
     if (primaryAxis.lead) {
       appendTextElement(textCard, "p", primaryAxis.lead, "result-lead");
+    }
+    if (config.presentation) {
+      renderCta(textCard, primaryAxis.cta);
     }
     if (primaryAxis.body) {
       primaryAxis.body.forEach(function renderBodyParagraph(text) {
@@ -194,6 +307,9 @@
       });
     } else {
       appendTextElement(textCard, "p", primaryAxis.resultText);
+    }
+    if (!config.presentation) {
+      renderCta(textCard, primaryAxis.cta);
     }
     renderProductDetails(textCard, primaryAxis.product);
     resultTexts.appendChild(textCard);
@@ -256,6 +372,7 @@
     engine.validateConfig(config);
     applyTheme();
     renderStart();
+    renderPresentation();
     showScreen(startScreen);
   } catch (error) {
     errorMessage.textContent = error.message;

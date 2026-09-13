@@ -1,0 +1,298 @@
+(function startDiagnosisApp(root, document) {
+  "use strict";
+
+  function resolvePrimaryAxisKey(config, answers, result) {
+    if (result.outcome === "neutral" || result.leaders.length === 0) {
+      return null;
+    }
+    if (result.leaders.length === 1 || !config.tieBreakerQuestionId) {
+      return result.leaders[0];
+    }
+    const tieBreakerQuestion = config.questions.find(function findTieBreakerQuestion(question) {
+      return question.id === config.tieBreakerQuestionId;
+    });
+    const tieBreakerChoice = tieBreakerQuestion.choices.find(function findTieBreakerChoice(choice) {
+      return choice.id === answers[config.tieBreakerQuestionId];
+    });
+    const tieBreakerAxisKey = Object.keys(tieBreakerChoice.scores).find(function findPositiveAxisKey(axisKey) {
+      return tieBreakerChoice.scores[axisKey] > 0;
+    });
+    if (result.leaders.includes(tieBreakerAxisKey)) {
+      return tieBreakerAxisKey;
+    }
+    for (let questionIndex = config.questions.length - 1; questionIndex >= 0; questionIndex -= 1) {
+      const question = config.questions[questionIndex];
+      if (question.id === config.tieBreakerQuestionId) {
+        continue;
+      }
+      const selectedChoice = question.choices.find(function findSelectedChoice(choice) {
+        return choice.id === answers[question.id];
+      });
+      const selectedAxisKey = Object.keys(selectedChoice.scores).find(function findPositiveAxisKey(axisKey) {
+        return selectedChoice.scores[axisKey] > 0;
+      });
+      if (result.leaders.includes(selectedAxisKey)) {
+        return selectedAxisKey;
+      }
+    }
+    return result.leaders[0];
+  }
+
+  if (typeof module === "object" && module.exports) {
+    module.exports = { resolvePrimaryAxisKey: resolvePrimaryAxisKey };
+  }
+
+  if (!document) {
+    return;
+  }
+
+  const config = root.DiagnosisConfig;
+  const engine = root.DiagnosisEngine;
+  const startScreen = document.getElementById("start-screen");
+  const questionScreen = document.getElementById("question-screen");
+  const resultScreen = document.getElementById("result-screen");
+  const startButton = document.getElementById("start-button");
+  const questionForm = document.getElementById("question-form");
+  const questionFieldset = document.getElementById("question-fieldset");
+  const errorMessage = document.getElementById("form-error");
+  const resultTitle = document.getElementById("result-title");
+  const resultRows = document.getElementById("result-rows");
+  const resultTexts = document.getElementById("result-texts");
+  const previousButton = document.getElementById("previous-button");
+  const nextButton = document.getElementById("next-button");
+  const restartButton = document.getElementById("restart-button");
+  const progressText = document.getElementById("progress-text");
+  const progressBar = document.getElementById("progress-bar");
+  const answers = Object.create(null);
+  let questionIndex = 0;
+
+  function appendTextElement(parent, tagName, text, className) {
+    const element = document.createElement(tagName);
+    element.textContent = text;
+    if (className) {
+      element.className = className;
+    }
+    parent.appendChild(element);
+    return element;
+  }
+
+  function appendProductDetail(parent, label, value) {
+    appendTextElement(parent, "dt", label);
+    appendTextElement(parent, "dd", value);
+  }
+
+  function renderCta(parent, cta) {
+    if (!cta) {
+      return;
+    }
+    const link = appendTextElement(parent, "a", cta.label, "result-cta");
+    link.href = cta.url;
+    link.referrerPolicy = "no-referrer";
+    restartButton.classList.add("secondary-button");
+  }
+
+  function renderProductDetails(parent, product) {
+    if (!product) {
+      return;
+    }
+    const productSection = document.createElement("section");
+    productSection.className = "product-details";
+    appendTextElement(productSection, "h4", product.name);
+    const details = document.createElement("dl");
+    appendProductDetail(details, "ドーシャ", product.dosha);
+    appendProductDetail(details, "五感", product.sense);
+    appendProductDetail(details, "内容量", product.volume);
+    appendProductDetail(details, "原材料", product.ingredients);
+    appendProductDetail(details, "特徴", product.feature);
+    appendProductDetail(details, "キーワード", product.keywords);
+    productSection.appendChild(details);
+    parent.appendChild(productSection);
+  }
+
+  function renderCommonConcept(parent, commonConcept) {
+    if (!commonConcept) {
+      return;
+    }
+    const conceptSection = document.createElement("section");
+    conceptSection.className = "common-concept";
+    appendTextElement(conceptSection, "h3", commonConcept.heading);
+    commonConcept.body.forEach(function renderConceptParagraph(text) {
+      appendTextElement(conceptSection, "p", text);
+    });
+    parent.appendChild(conceptSection);
+  }
+
+  function showScreen(screen) {
+    [startScreen, questionScreen, resultScreen].forEach(function hideScreen(currentScreen) {
+      currentScreen.hidden = currentScreen !== screen;
+    });
+  }
+
+  function applyTheme() {
+    Object.keys(config.theme).forEach(function setColor(colorName) {
+      document.documentElement.style.setProperty("--" + colorName.replace(/[A-Z]/g, function addDash(letter) {
+        return "-" + letter.toLowerCase();
+      }), config.theme[colorName]);
+    });
+  }
+
+  function renderStart() {
+    document.title = config.title;
+    document.querySelector('meta[name="description"]').content = config.description;
+    document.getElementById("page-eyebrow").textContent = config.eyebrow;
+    document.getElementById("page-title").textContent = config.title;
+    document.getElementById("page-description").textContent = config.description;
+    document.getElementById("start-brand").textContent = config.brand || "";
+    document.getElementById("result-brand").textContent = config.brand || "";
+    startButton.textContent = config.labels.start;
+    previousButton.textContent = config.labels.previous;
+    restartButton.textContent = config.labels.restart;
+    resultTitle.textContent = config.resultTitle;
+    const resultDescription = document.getElementById("result-description");
+    resultDescription.textContent = config.resultDescription;
+    resultDescription.hidden = !config.resultDescription || config.hideResultDescription;
+  }
+
+  function renderQuestion() {
+    const question = config.questions[questionIndex];
+    questionFieldset.replaceChildren();
+    errorMessage.hidden = true;
+
+    const legend = document.createElement("legend");
+    legend.id = "question-title";
+    legend.tabIndex = -1;
+    legend.textContent = question.prompt;
+    questionFieldset.appendChild(legend);
+
+    question.choices.forEach(function renderChoice(choice) {
+      const label = document.createElement("label");
+      label.className = "choice";
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = question.id;
+      input.value = choice.id;
+      input.checked = answers[question.id] === choice.id;
+      input.required = true;
+      label.appendChild(input);
+      appendTextElement(label, "span", choice.label);
+      questionFieldset.appendChild(label);
+    });
+
+    progressText.textContent = "質問 " + (questionIndex + 1) + " / " + config.questions.length;
+    progressBar.max = config.questions.length;
+    progressBar.value = questionIndex + 1;
+    previousButton.hidden = questionIndex === 0;
+    nextButton.textContent = questionIndex === config.questions.length - 1 ? config.labels.finish : config.labels.next;
+    showScreen(questionScreen);
+    legend.focus();
+  }
+
+  function renderResult(result) {
+    resultRows.replaceChildren();
+    resultTexts.replaceChildren();
+    restartButton.classList.remove("secondary-button");
+    if (result.outcome === "neutral") {
+      const neutral = config.neutralResult || {
+        title: "今回は判定を保留します",
+        body: ["今回の回答だけでは、特定の結果をおすすめする材料がありません。無理にタイプを決める必要はありません。"]
+      };
+      resultTitle.textContent = neutral.title;
+      const neutralCard = document.createElement("section");
+      neutralCard.className = "axis-text neutral-result";
+      neutral.body.forEach(function renderNeutralParagraph(text) {
+        appendTextElement(neutralCard, "p", text);
+      });
+      renderCta(neutralCard, neutral.cta);
+      resultTexts.appendChild(neutralCard);
+      showScreen(resultScreen);
+      resultTitle.focus();
+      return;
+    }
+    const primaryAxis = config.axes.find(function findPrimaryAxis(axis) {
+      return axis.key === resolvePrimaryAxisKey(config, answers, result);
+    });
+    resultTitle.textContent = config.resultTitle;
+
+    const textCard = document.createElement("section");
+    textCard.className = "axis-text primary-axis";
+    appendTextElement(textCard, "h3", primaryAxis.heading || primaryAxis.label);
+    if (primaryAxis.lead) {
+      appendTextElement(textCard, "p", primaryAxis.lead, "result-lead");
+    }
+    if (primaryAxis.body) {
+      primaryAxis.body.forEach(function renderBodyParagraph(text) {
+        appendTextElement(textCard, "p", text, text === primaryAxis.emphasis ? "result-emphasis" : "");
+      });
+    } else {
+      appendTextElement(textCard, "p", primaryAxis.resultText);
+    }
+    renderCta(textCard, primaryAxis.cta);
+    renderProductDetails(textCard, primaryAxis.product);
+    resultTexts.appendChild(textCard);
+    renderCommonConcept(resultTexts, config.commonConcept);
+    showScreen(resultScreen);
+    resultTitle.focus();
+  }
+
+  questionForm.addEventListener("submit", function handleSubmit(event) {
+    event.preventDefault();
+    errorMessage.hidden = true;
+    const question = config.questions[questionIndex];
+    const selectedChoice = new FormData(questionForm).get(question.id);
+    if (!selectedChoice) {
+      errorMessage.textContent = "選択肢を1つ選んでください。";
+      errorMessage.hidden = false;
+      return;
+    }
+
+    answers[question.id] = selectedChoice;
+    if (questionIndex < config.questions.length - 1) {
+      questionIndex += 1;
+      renderQuestion();
+      return;
+    }
+
+    try {
+      renderResult(engine.calculateDiagnosis(config, answers));
+    } catch (error) {
+      errorMessage.textContent = error.message;
+      errorMessage.hidden = false;
+    }
+  });
+
+  startButton.addEventListener("click", function startDiagnosis() {
+    questionIndex = 0;
+    renderQuestion();
+  });
+
+  previousButton.addEventListener("click", function showPreviousQuestion() {
+    const question = config.questions[questionIndex];
+    const selectedChoice = new FormData(questionForm).get(question.id);
+    if (selectedChoice) {
+      answers[question.id] = selectedChoice;
+    }
+    questionIndex -= 1;
+    renderQuestion();
+  });
+
+  restartButton.addEventListener("click", function restartDiagnosis() {
+    Object.keys(answers).forEach(function clearAnswer(questionId) {
+      delete answers[questionId];
+    });
+    questionIndex = 0;
+    showScreen(startScreen);
+    startButton.focus();
+  });
+
+  try {
+    engine.validateConfig(config);
+    applyTheme();
+    renderStart();
+    showScreen(startScreen);
+  } catch (error) {
+    errorMessage.textContent = error.message;
+    errorMessage.hidden = false;
+    showScreen(questionScreen);
+    nextButton.disabled = true;
+  }
+}(globalThis, typeof document === "undefined" ? null : document));

@@ -55,7 +55,23 @@
         throw new Error("結果軸のキーは重複しない英小文字始まりの識別子にしてください。");
       }
       axisKeys.add(key);
+      validateCta(axis.cta);
     });
+
+    if (config.neutralResult !== undefined) {
+      const neutral = config.neutralResult;
+      if (!neutral || typeof neutral !== "object" || Array.isArray(neutral)) {
+        throw new Error("判定保留の表示設定が必要です。");
+      }
+      requireNonEmptyText(neutral.title, "判定保留の見出しを設定してください。");
+      if (!Array.isArray(neutral.body) || neutral.body.length === 0) {
+        throw new Error("判定保留の説明文を設定してください。");
+      }
+      neutral.body.forEach(function validateNeutralText(text) {
+        requireNonEmptyText(text, "判定保留の説明文を設定してください。");
+      });
+      validateCta(neutral.cta);
+    }
 
     if (!Array.isArray(config.questions) || config.questions.length === 0) {
       throw new Error("設問を1件以上設定してください。");
@@ -106,6 +122,27 @@
     return config;
   }
 
+  function validateCta(cta) {
+    if (cta === undefined) {
+      return;
+    }
+    if (!cta || typeof cta !== "object" || Array.isArray(cta)) {
+      throw new Error("CTAには表示文とHTTPS URLを設定してください。");
+    }
+    requireNonEmptyText(cta.label, "CTAの表示文を設定してください。");
+    const url = requireNonEmptyText(cta.url, "CTAのHTTPS URLを設定してください。");
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (error) {
+      throw new Error("CTAには認証情報を含まないHTTPS URLを設定してください。");
+    }
+    if (!/^https:\/\//i.test(url) || /[\s\\\u0000-\u001f\u007f]/.test(cta.url) ||
+        parsed.protocol !== "https:" || !parsed.hostname || parsed.username || parsed.password) {
+      throw new Error("CTAには認証情報を含まないHTTPS URLを設定してください。");
+    }
+  }
+
   function calculateDiagnosis(config, answers) {
     validateConfig(config);
     if (!answers || typeof answers !== "object" || Array.isArray(answers)) {
@@ -146,8 +183,17 @@
     const total = config.axes.reduce(function sumScores(sum, axis) {
       return sum + scores[axis.key];
     }, 0);
-    if (!Number.isSafeInteger(total) || total <= 0) {
-      throw new Error("全軸の合計点は1以上の安全な整数にしてください。");
+    if (!Number.isSafeInteger(total) || total < 0) {
+      throw new Error("全軸の合計点は0以上の安全な整数にしてください。");
+    }
+    if (total === 0) {
+      return {
+        outcome: "neutral",
+        scores: scores,
+        percentages: null,
+        leaders: [],
+        answeredQuestionCount: config.questions.length
+      };
     }
     const percentages = {};
     config.axes.forEach(function calculatePercentage(axis) {

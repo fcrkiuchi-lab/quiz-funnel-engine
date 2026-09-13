@@ -11,13 +11,36 @@
 
   return {
     id: "salon-de-krishna-tuning-check-v2",
-    brand: "",
-    title: "🌿 今日の調律チェック",
-    eyebrow: "― 今日は、どんな私で過ごしたい？ ―",
-    description: "※これは体質を決める診断ではなく、「今日の自分に必要な調律」を見つけるチェックです。",
-    resultTitle: "✨ 今日のあなたに必要な調律は……",
+    brand: "Salon de Krishna",
+    title: "今日の調律チェック",
+    eyebrow: "今日は、どんな私で過ごしたい？",
+    description: "今日の私に寄り添う一杯を。",
+    resultTitle: "今日のあなたに寄り添う一杯",
     resultDescription: "五感を調律し、本来のあなたへ。",
     hideResultDescription: true,
+    // 任意の表示設定。採点・質問・CTAとは独立し、省略すると従来表示になる。
+    presentation: {
+      location: "ASHIYA",
+      duration: "約1分",
+      notice: "※体質を決める診断ではありません。",
+      startImage: {
+        file: "tea-hero.jpg",
+        alt: "淡い水色の布と植物に囲まれた紅茶のカップのイラスト",
+        caption: "イラストはイメージです。"
+      }
+    },
+    neutralResult: {
+      title: "今回は判定を保留します",
+      body: [
+        "今回はすべて「どれにも当てはまらない」という回答でした。",
+        "この回答だけで、今日のあなたに必要な調律を1つに決めることはできません。無理にタイプを決めず、今の感覚を大切にしてください。"
+      ],
+      cta: {
+        label: "紅茶選びをLINEで相談する",
+        url: "https://lin.ee/uUx66iz"
+      }
+    },
+    // 公式サイト掲載のLINEを暫定CTAに使用。商品ページ確定後に結果別URLへ差し替える。
     labels: {
       start: "チェックをはじめる",
       next: "次の質問へ",
@@ -28,19 +51,20 @@
     theme: {
       background: "#f5efe6",
       surface: "#fffdf8",
-      primary: "#8a4f35",
+      primary: "#0b5e8e",
       primaryText: "#ffffff",
-      accent: "#ead5c2",
-      text: "#352b27",
-      muted: "#6e625d",
-      border: "#decfc3"
+      accent: "#e2eff0",
+      text: "#273f48",
+      muted: "#52666b",
+      border: "#cedcda"
     },
     axes: [
       {
         key: "meguru",
         label: "めぐる",
         resultText: "ゆっくり、温かく、繰り返す。",
-        heading: "🌿 めぐる",
+        heading: "めぐる",
+        visual: { file: "meguru.png", alt: "めぐるの商品ラベル", color: "#386653" },
         lead: "ゆっくり、温かく、繰り返す。",
         body: [
           "今日は少しペースを落として、自分の内側に戻る時間を。",
@@ -50,6 +74,10 @@
           "Ayurveda 調律ハーブ紅茶「めぐる」。"
         ],
         emphasis: "「動くこと」より「落ち着くこと」が必要なのかもしれません。",
+        cta: {
+          label: "「めぐる」についてLINEで相談する",
+          url: "https://lin.ee/uUx66iz"
+        },
         product: {
           name: "Ayurveda 調律ハーブ紅茶「めぐる」",
           dosha: "ヴァータ",
@@ -64,7 +92,8 @@
         key: "yawaragu",
         label: "やわらぐ",
         resultText: "緩める、冷ます、手放す。",
-        heading: "🌸 やわらぐ ― ピッタ",
+        heading: "やわらぐ",
+        visual: { file: "yawaragu.png", alt: "やわらぐの商品ラベル", color: "#a14964" },
         lead: "緩める、冷ます、手放す。",
         body: [
           "今日は少し頑張ることをゆるめて、心と身体にひと息つく時間を。",
@@ -74,6 +103,10 @@
           "Ayurveda 調律ハーブ紅茶「やわらぐ」。"
         ],
         emphasis: "「頑張ること」より「力を抜くこと」が必要なのかもしれません。",
+        cta: {
+          label: "「やわらぐ」についてLINEで相談する",
+          url: "https://lin.ee/uUx66iz"
+        },
         product: {
           name: "Ayurveda 調律ハーブ紅茶「やわらぐ」",
           dosha: "ピッタ",
@@ -88,7 +121,8 @@
         key: "mezameru",
         label: "めざめる",
         resultText: "動く、変える、軽くする。",
-        heading: "🌾 めざめる ― カパ",
+        heading: "めざめる",
+        visual: { file: "mezameru.png", alt: "めざめるの商品ラベル", color: "#226581" },
         lead: "動く、変える、軽くする。",
         body: [
           "今日はいつもの流れを少し変えて、心と身体を軽やかに動かす時間を。",
@@ -98,6 +132,10 @@
           "Ayurveda 調律ハーブ紅茶「めざめる」。"
         ],
         emphasis: "「休むこと」より「一歩動き出すこと」が必要なのかもしれません。",
+        cta: {
+          label: "「めざめる」についてLINEで相談する",
+          url: "https://lin.ee/uUx66iz"
+        },
         product: {
           name: "Ayurveda 調律ハーブ紅茶「めざめる」",
           dosha: "カパ",

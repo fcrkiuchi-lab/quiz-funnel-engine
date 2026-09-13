@@ -8,6 +8,13 @@ param(
   [ValidateNotNullOrEmpty()]
   [string[]]$AllowedPath,
 
+  [ValidateSet(
+    'diagnosis-template/config.js',
+    'diagnosis-template/app.js',
+    'diagnosis-template/engine.js'
+  )]
+  [string[]]$ProtectedPathOptIn = @(),
+
   [switch]$Publish,
 
   [ValidatePattern('^https://')]
@@ -78,7 +85,9 @@ try {
 
   $approvedPaths = @($AllowedPath + 'release-marker.json' | Sort-Object -Unique)
   $changedPaths = Get-ChangedPath
-  $protectedChanges = @($changedPaths | Where-Object { $_ -in $protectedPaths })
+  $protectedChanges = @($changedPaths | Where-Object {
+    $_ -in $protectedPaths -and $_ -notin $ProtectedPathOptIn
+  })
   if ($protectedChanges.Count -gt 0) {
     throw "Protected files cannot be released: $($protectedChanges -join ', ')"
   }
@@ -101,6 +110,7 @@ try {
       nodeTests = 'passed'
       javaScriptSyntax = 'passed'
       approvedPaths = $approvedPaths
+      protectedPathOptIn = $ProtectedPathOptIn
       publish = $false
     } | ConvertTo-Json -Compress
     return

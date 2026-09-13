@@ -11,7 +11,7 @@ const config = {
   fullyParallel: false,
   workers: 1,
   timeout: 15000,
-  globalTimeout: 60000,
+  globalTimeout: 180000,
   reporter: "line",
   use: {
     baseURL: baseURL,

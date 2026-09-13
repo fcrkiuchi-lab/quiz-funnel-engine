@@ -1,0 +1,363 @@
+/* Optional presentation layer; base theme and engine are kept unchanged. */
+.brand-presentation {
+  --shadow-soft: 0 16px 54px rgba(32, 75, 85, 0.08);
+  --radius-large: 20px;
+  --radius-medium: 12px;
+  font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+}
+
+.brand-presentation body {
+  background: linear-gradient(135deg, #f5efe6, #f5faf8 55%, #e9f1ef);
+}
+
+.brand-presentation body::before,
+.brand-presentation body::after,
+.brand-presentation .screen::after,
+.brand-presentation .start-motion,
+.brand-presentation .result-motion {
+  display: none;
+}
+
+.brand-presentation .page-shell {
+  width: min(100% - 32px, 620px);
+  padding-block: 24px;
+}
+
+.brand-presentation .card {
+  padding: 32px 36px;
+  background: var(--surface);
+  border-color: #cbd9d6;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.brand-presentation .screen {
+  min-height: 0;
+}
+
+.brand-presentation #start-screen {
+  display: block;
+  text-align: center;
+}
+
+.brand-presentation .brand {
+  margin: 0 0 20px;
+  font-family: Georgia, "Yu Mincho", serif;
+  font-size: clamp(1.5rem, 5.5vw, 1.9rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--primary);
+  text-align: center;
+}
+
+.brand-presentation .brand-location {
+  display: block;
+  margin-top: 5px;
+  font-family: Georgia, serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.4em;
+}
+
+.brand-presentation .start-visual {
+  margin: 0 -12px 12px;
+}
+
+.brand-presentation .start-visual img {
+  display: block;
+  width: 100%;
+  height: clamp(155px, 41vw, 235px);
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.brand-presentation figcaption {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.brand-presentation .eyebrow {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.035em;
+}
+
+.brand-presentation #page-eyebrow {
+  display: none;
+}
+
+.brand-presentation #page-title {
+  margin-top: 24px;
+}
+
+.brand-presentation h1,
+.brand-presentation .primary-axis h3 {
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  font-weight: 500;
+  color: var(--primary);
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+
+.brand-presentation h1 {
+  font-size: clamp(1.65rem, 6.7vw, 2.3rem);
+}
+
+.brand-presentation #page-description {
+  max-width: 30em;
+  margin: 12px auto 0;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text);
+  text-wrap: wrap;
+}
+
+.brand-presentation .start-duration {
+  display: inline-block;
+  margin-inline-start: 0.5em;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.brand-presentation button,
+.brand-presentation .result-cta {
+  min-height: 52px;
+  padding: 13px 16px;
+  border-radius: 10px;
+  background: var(--primary);
+  box-shadow: none;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.brand-presentation #start-button {
+  max-width: none;
+  margin-top: 24px;
+  padding-inline: 44px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 94%, white), var(--primary));
+  border: 1px solid color-mix(in srgb, var(--primary) 80%, black);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--primary) 18%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.brand-presentation .start-arrow {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 18px;
+  transform: translateY(-50%);
+  font-family: sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .brand-presentation #start-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--primary) 20%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    filter: none;
+  }
+}
+
+.brand-presentation #start-button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.brand-presentation #start-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+
+.brand-presentation .secondary-button {
+  background: transparent;
+}
+
+.brand-presentation button:hover:not(:disabled),
+.brand-presentation .result-cta:hover {
+  filter: brightness(0.95);
+}
+
+.brand-presentation .start-notice {
+  margin: 20px 0 0;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.brand-presentation .question-brand {
+  margin-bottom: 30px;
+}
+
+.brand-presentation .progress-row {
+  margin-bottom: 24px;
+}
+
+.brand-presentation fieldset {
+  margin-top: 0;
+}
+
+.brand-presentation legend {
+  margin-bottom: 12px;
+  font-size: 1.2rem;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.brand-presentation .choice {
+  padding: 16px 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.brand-presentation #result-title {
+  margin-bottom: 8px;
+  font-size: 1rem;
+  line-height: 1.8;
+  font-weight: 400;
+  color: var(--primary);
+  text-align: center;
+}
+
+.brand-presentation #result-title:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 5px;
+}
+
+.brand-presentation .result-texts {
+  margin-top: 0;
+  gap: 24px;
+}
+
+.brand-presentation .axis-text {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.brand-presentation .axis-text::before {
+  display: none;
+}
+
+.brand-presentation .primary-axis h3 {
+  font-size: clamp(2.4rem, 10vw, 3.4rem);
+  color: var(--axis-color, var(--primary));
+  text-align: center;
+}
+
+.brand-presentation .result-visual {
+  width: min(65%, 240px);
+  margin: 12px auto 18px;
+}
+
+.brand-presentation .result-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.brand-presentation .result-lead {
+  text-align: center;
+  font-weight: 400;
+  margin-bottom: 12px;
+}
+
+.brand-presentation .primary-axis > .result-cta {
+  margin: 18px 0 24px;
+}
+
+.brand-presentation .axis-text > p {
+  font-size: 1rem;
+  line-height: 1.85;
+}
+
+.brand-presentation .result-emphasis {
+  color: var(--axis-color, var(--primary));
+  font-weight: 600;
+}
+
+.brand-presentation .product-details,
+.brand-presentation .common-concept {
+  margin-top: 24px;
+  padding-top: 24px;
+}
+
+.brand-presentation .product-details h4,
+.brand-presentation .common-concept h3 {
+  color: var(--primary);
+  line-height: 1.7;
+}
+
+.brand-presentation .product-details dl {
+  grid-template-columns: minmax(3.5rem, auto) minmax(0, 1fr);
+  font-size: 0.875rem;
+  gap: 12px;
+}
+
+.brand-presentation .common-concept {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.brand-presentation #restart-button {
+  margin-top: 28px;
+  color: var(--primary);
+  background: transparent;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-weight: 400;
+}
+
+.brand-presentation [data-outcome="neutral"] #result-title {
+  margin: 32px 0 20px;
+  font-family: "Yu Mincho", serif;
+  font-size: 1.65rem;
+}
+
+@media (max-width: 480px) {
+  .brand-presentation .page-shell {
+    width: calc(100% - 24px);
+    padding-block: 12px;
+  }
+
+  .brand-presentation .card {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  .brand-presentation .brand {
+    margin-bottom: 16px;
+  }
+
+  .brand-presentation .start-visual {
+    margin-inline: -8px;
+  }
+
+  .brand-presentation .button-row {
+    flex-wrap: wrap;
+  }
+
+  .brand-presentation .button-row button {
+    min-width: 7rem;
+  }
+
+  .brand-presentation .result-visual {
+    width: min(67%, 210px);
+  }
+}

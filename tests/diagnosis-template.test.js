@@ -27,10 +27,11 @@ const singleMeguruAnswers = {
 
 test("V2設定は7問・各4択として検証できる", function () {
   assert.equal(validateConfig(config), config);
-  assert.equal(config.title, "🌿 今日の調律チェック");
-  assert.equal(config.eyebrow, "― 今日は、どんな私で過ごしたい？ ―");
-  assert.equal(config.description, "※これは体質を決める診断ではなく、「今日の自分に必要な調律」を見つけるチェックです。");
-  assert.equal(config.resultTitle, "✨ 今日のあなたに必要な調律は……");
+  assert.equal(config.title, "今日の調律チェック");
+  assert.equal(config.eyebrow, "今日は、どんな私で過ごしたい？");
+  assert.equal(config.description, "今日の私に寄り添う一杯を。");
+  assert.equal(config.presentation.notice, "※体質を決める診断ではありません。");
+  assert.equal(config.resultTitle, "今日のあなたに寄り添う一杯");
   assert.equal(config.questions.length, 7);
   config.questions.forEach(function verifyChoiceCount(question) {
     assert.equal(question.choices.length, 4);
@@ -55,13 +56,16 @@ test("0点回答を含んでも他回答を従来どおり採点する", functio
   assert.deepEqual(result.scores, { meguru: 4, yawaragu: 1, mezameru: 2 });
 });
 
-test("全問noneでは合計0エラーになる", function () {
+test("全問noneはタイプも割合も割り当てず判定保留になる", function () {
   const answers = Object.fromEntries(config.questions.map(function makeNoneAnswer(question) {
     return [question.id, "none"];
   }));
-  assert.throws(function () {
-    calculateDiagnosis(config, answers);
-  }, /全軸の合計点/);
+  const result = calculateDiagnosis(config, answers);
+  assert.deepEqual(result, {
+    outcome: "neutral", scores: { meguru: 0, yawaragu: 0, mezameru: 0 },
+    percentages: null, leaders: [], answeredQuestionCount: 7
+  });
+  assert.equal(resolvePrimaryAxisKey(config, answers, result), null);
 });
 
 test("結果には各軸の商品情報と共通コンセプトを持つ", function () {
@@ -72,12 +76,27 @@ test("結果には各軸の商品情報と共通コンセプトを持つ", funct
       keywords: axis.product.keywords
     };
   }), [
-    { heading: "🌿 めぐる", name: "Ayurveda 調律ハーブ紅茶「めぐる」", keywords: "ゆっくり・温かく・繰り返す" },
-    { heading: "🌸 やわらぐ ― ピッタ", name: "Ayurveda 調律ハーブ紅茶「やわらぐ」", keywords: "緩める・冷ます・手放す" },
-    { heading: "🌾 めざめる ― カパ", name: "Ayurveda 調律ハーブ紅茶「めざめる」", keywords: "動く・変える・軽くする" }
+    { heading: "めぐる", name: "Ayurveda 調律ハーブ紅茶「めぐる」", keywords: "ゆっくり・温かく・繰り返す" },
+    { heading: "やわらぐ", name: "Ayurveda 調律ハーブ紅茶「やわらぐ」", keywords: "緩める・冷ます・手放す" },
+    { heading: "めざめる", name: "Ayurveda 調律ハーブ紅茶「めざめる」", keywords: "動く・変える・軽くする" }
   ]);
   assert.equal(config.commonConcept.heading, "Ayurveda 調律茶");
   assert.equal(config.commonConcept.body[0], "五感を調律し、本来のあなたへ。");
+});
+
+test("Krishnaの4結果は公式サイト掲載のLINE相談CTAを持つ", function () {
+  const officialLineUrl = "https://lin.ee/uUx66iz";
+  assert.deepEqual(config.axes.map(function readCta(axis) {
+    return axis.cta;
+  }), [
+    { label: "「めぐる」についてLINEで相談する", url: officialLineUrl },
+    { label: "「やわらぐ」についてLINEで相談する", url: officialLineUrl },
+    { label: "「めざめる」についてLINEで相談する", url: officialLineUrl }
+  ]);
+  assert.deepEqual(config.neutralResult.cta, {
+    label: "紅茶選びをLINEで相談する",
+    url: officialLineUrl
+  });
 });
 
 test("単独最大時はQ7が別軸でも単独最大を返す", function () {
@@ -225,7 +244,7 @@ test("割合の計算前に安全でない合計を拒否する", function () {
   }, /安全な整数/);
 });
 
-test("割合の計算前に0以下の合計を拒否する", function () {
+test("割合の計算前に負の合計を拒否する", function () {
   const invalidConfig = JSON.parse(JSON.stringify(config));
   invalidConfig.questions = [invalidConfig.questions[0]];
   delete invalidConfig.tieBreakerQuestionId;
@@ -233,9 +252,9 @@ test("割合の計算前に0以下の合計を拒否する", function () {
   Object.defineProperty(invalidConfig.questions[0].choices[0].scores, "meguru", {
     configurable: true,
     enumerable: true,
-    get: function returnPositiveDuringValidationAndZeroDuringScoring() {
+    get: function returnPositiveDuringValidationAndNegativeDuringScoring() {
       scoreReadCount += 1;
-      return scoreReadCount === 1 ? 2 : 0;
+      return scoreReadCount === 1 ? 2 : -1;
     }
   });
   assert.equal(validateConfig(invalidConfig), invalidConfig);
@@ -243,6 +262,77 @@ test("割合の計算前に0以下の合計を拒否する", function () {
   assert.throws(function () {
     calculateDiagnosis(invalidConfig, { q1: "meguru" });
   }, /全軸の合計点/);
+});
+
+test("CTAは任意でありHTTPSリンクを設定できる", function () {
+  const candidate = JSON.parse(JSON.stringify(config));
+  candidate.axes.forEach(function (axis) {
+    axis.cta = { label: axis.label + "の商品を見る", url: "https://shop.example.test/products/" + axis.key };
+  });
+  candidate.neutralResult.cta = { label: "3つの紅茶を見る", url: "https://shop.example.test/tea" };
+  assert.equal(validateConfig(candidate), candidate);
+  assert.equal(validateConfig(workStyleConfig), workStyleConfig);
+  assert.deepEqual(calculateDiagnosis(candidate, singleMeguruAnswers), calculateDiagnosis(config, singleMeguruAnswers));
+});
+
+test("危険または不完全なCTAを結果・判定保留の両方で拒否する", function () {
+  const invalidCtas = [null, [], {}, { label: "見る" },
+    { label: " ", url: "https://shop.example.test/" },
+    ...["", "javascript:alert(1)", "data:text/html,hello", "http://shop.example.test/", "/tea", "//shop.example.test/", "https://user:password@shop.example.test/", "https://shop.example.test/\n", "https://shop.example.test/a b", "https:\\shop.example.test", "https://"].map(function (url) { return { label: "見る", url: url }; })];
+  ["axis", "neutral"].forEach(function (location) {
+    invalidCtas.forEach(function (cta) {
+      const candidate = JSON.parse(JSON.stringify(config));
+      (location === "axis" ? candidate.axes[0] : candidate.neutralResult).cta = cta;
+      assert.throws(function () { validateConfig(candidate); }, /CTA/);
+    });
+  });
+});
+
+test("判定保留設定を検証し省略時にもゼロ合計を処理する", function () {
+  [null, [], {}, { title: "保留", body: [] }, { title: "保留", body: [""] }].forEach(function (neutral) {
+    const candidate = JSON.parse(JSON.stringify(config));
+    candidate.neutralResult = neutral;
+    assert.throws(function () { validateConfig(candidate); }, /判定保留/);
+  });
+  const candidate = JSON.parse(JSON.stringify(config));
+  delete candidate.neutralResult;
+  const answers = Object.fromEntries(candidate.questions.map(function (q) { return [q.id, "none"]; }));
+  assert.equal(calculateDiagnosis(candidate, answers).outcome, "neutral");
+});
+
+test("4の7乗の全回答で決定的に完了し判定保留は全問中立だけになる", function () {
+  const before = JSON.stringify(config);
+  const choiceIds = ["meguru", "yawaragu", "mezameru", "none"];
+  let neutralCount = 0;
+  for (let combination = 0; combination < 4 ** 7; combination += 1) {
+    let code = combination;
+    const answers = {};
+    const expectedScores = { meguru: 0, yawaragu: 0, mezameru: 0 };
+    config.questions.forEach(function (question, index) {
+      const choice = choiceIds[code % 4];
+      code = Math.floor(code / 4);
+      answers[question.id] = choice;
+      if (choice !== "none") expectedScores[choice] += index === 6 ? 2 : 1;
+    });
+    const result = calculateDiagnosis(config, answers);
+    assert.deepEqual(result, calculateDiagnosis(config, answers));
+    assert.deepEqual(result.scores, expectedScores);
+    assert.equal(result.answeredQuestionCount, 7);
+    if (combination === 4 ** 7 - 1) {
+      neutralCount += 1;
+      assert.equal(result.outcome, "neutral");
+      assert.equal(result.percentages, null);
+      assert.equal(resolvePrimaryAxisKey(config, answers, result), null);
+    } else {
+      assert.equal(result.outcome, undefined);
+      assert.ok(result.leaders.includes(resolvePrimaryAxisKey(config, answers, result)));
+      Object.values(result.percentages).forEach(function (percent) {
+        assert.ok(Number.isFinite(percent) && percent >= 0 && percent <= 100);
+      });
+    }
+  }
+  assert.equal(neutralCount, 1);
+  assert.equal(JSON.stringify(config), before);
 });
 
 (async function runTests() {
