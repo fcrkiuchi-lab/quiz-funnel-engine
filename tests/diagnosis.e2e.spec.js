@@ -133,9 +133,18 @@ test.beforeEach(async function enableReducedMotion({ page }) {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
 
-test("plays one-shot V2 motion only on the start and result screens", async function ({ page }) {
+test("plays one-shot V2 motion in the base theme only on the start and result screens", async function ({ page }) {
+  // Exercise the supported base theme without changing the real config or CSS.
+  await page.context().route("**/diagnosis-template/config.js", async function useBaseTheme(route) {
+    const response = await route.fetch();
+    await route.fulfill({
+      response: response,
+      body: await response.text() + "\ndelete globalThis.DiagnosisConfig.presentation;\n"
+    });
+  });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("./");
+  await expect(page.locator("html")).not.toHaveClass(/brand-presentation/);
 
   const templatePage = await page.context().newPage();
   await templatePage.emulateMedia({ reducedMotion: "reduce" });
@@ -215,12 +224,16 @@ test("completes the published-root tuning-check flow in Edge at 375px", async fu
         typeof globalThis.DiagnosisEngine === "object";
     });
   }).toBe(true);
-  await expect(page.locator("#start-brand")).toHaveText("");
+  await expect(page.locator("html")).toHaveClass(/brand-presentation/);
+  await expect(page.locator("#start-brand")).toHaveText("Salon de KrishnaASHIYA");
+  await expect(page.locator("#page-description")).toContainText("今日の私に寄り添う一杯を。");
+  await expect(page.locator(".start-motion")).toBeHidden();
+  await expect(page.locator(".start-visual img")).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("button", { name: "チェックをはじめる" }).click();
   await expectQuestionFocus(page, "Q1．今のあなたに一番近いのは？");
-  await expect(page.locator("#question-screen .brand")).toHaveCount(0);
+  await expect(page.locator("#question-screen .brand")).toHaveText("Salon de KrishnaASHIYA");
   await expect(page.locator("#progress-bar")).toHaveAttribute("aria-labelledby", "progress-text");
   await page.getByLabel("A．頭の中が忙しく、あれこれ考えている").check();
   await page.getByRole("button", { name: "次の質問へ" }).click();
@@ -252,11 +265,14 @@ test("completes the published-root tuning-check flow in Edge at 375px", async fu
   await page.getByRole("button", { name: "結果を見る" }).click();
 
   await expect(page.locator("#result-screen")).toBeVisible();
-  await expect(page.locator("#result-brand")).toHaveText("");
-  await expect(page.locator("#result-title")).toHaveText("✨ 今日のあなたに必要な調律は……");
+  await expect(page.locator("#result-brand")).toHaveText("Salon de KrishnaASHIYA");
+  await expect(page.locator("#result-title")).toHaveText("今日のあなたに寄り添う一杯");
+  await expect(page.locator(".result-motion")).toBeHidden();
+  await expect(page.locator(".result-visual img")).toBeVisible();
+  await expect(page.locator(".result-visual img")).toHaveAttribute("src", /\/meguru\.png$/);
   await expect(page.locator("#result-description")).toBeHidden();
   await expect(page.locator(".primary-axis")).toHaveCount(1);
-  await expect(page.locator(".primary-axis h3")).toHaveText("🌿 めぐる");
+  await expect(page.locator(".primary-axis h3")).toHaveText("めぐる");
   await expect(page.locator(".result-emphasis")).toHaveText("「動くこと」より「落ち着くこと」が必要なのかもしれません。");
   await expect(page.locator(".product-details h4")).toHaveText("Ayurveda 調律ハーブ紅茶「めぐる」");
   await expect(page.locator(".product-details")).toContainText("ヴァータ");
