@@ -26,10 +26,47 @@ async function run() {
       });
       const page = await context.newPage();
       page.on("pageerror", (error) => issues.push(error.message));
+
+      async function checkLayout() {
+        const layout = await page.evaluate(() => {
+          const current = document.querySelector(".screen:not([hidden])");
+          const width = document.documentElement.clientWidth;
+          const elements = Array.from(current.querySelectorAll("button, a, label, img, legend, h1, h2, h3, p, .eyebrow, .progress-row"))
+            .filter((el) => {
+              const r = el.getBoundingClientRect();
+              return r.width > 0 && r.height > 0;
+            });
+          const overflow = elements.filter((el) => {
+            const r = el.getBoundingClientRect();
+            return r.left < -1 || r.right > width + 1;
+          }).map((el) => el.id || el.className || el.tagName);
+          const overlaps = [];
+          for (let left = 0; left < elements.length; left += 1) {
+            for (let right = left + 1; right < elements.length; right += 1) {
+              const a = elements[left];
+              const b = elements[right];
+              if (a.contains(b) || b.contains(a)) continue;
+              const ar = a.getBoundingClientRect();
+              const br = b.getBoundingClientRect();
+              const overlapX = Math.min(ar.right, br.right) - Math.max(ar.left, br.left);
+              const overlapY = Math.min(ar.bottom, br.bottom) - Math.max(ar.top, br.top);
+              if (overlapX > 1 && overlapY > 1) {
+                overlaps.push((a.id || a.className || a.tagName) + " / " + (b.id || b.className || b.tagName));
+              }
+            }
+          }
+          return { overflow, overlaps, scrollWidth: document.documentElement.scrollWidth, width };
+        });
+        assert.deepEqual(layout.overflow, []);
+        assert.deepEqual(layout.overlaps, []);
+        assert.ok(layout.scrollWidth <= layout.width);
+      }
+
       await page.goto(pathToFileURL(path.join(root, "index.html")).href);
       await page.locator(".start-visual img").evaluate((img) => img.decode());
       assert.equal(await page.locator("#start-screen").isVisible(), true);
       assert.equal(await page.locator(".tea-family span").count(), 0);
+      await checkLayout();
       if (width === 375 || width === 1280) {
         await page.screenshot({ path: path.join(evidenceDir, width + "-start.png"), fullPage: true });
       }
@@ -45,19 +82,6 @@ async function run() {
         await page.screenshot({ path: path.join(evidenceDir, "375-question.png"), fullPage: true });
       }
 
-      async function checkLayout() {
-        const layout = await page.evaluate(() => {
-          const current = document.querySelector(".screen:not([hidden])");
-          const width = document.documentElement.clientWidth;
-          const overflow = Array.from(current.querySelectorAll("button, a, label, img, legend")).filter((el) => {
-            const r = el.getBoundingClientRect();
-            return r.width > 0 && (r.left < -1 || r.right > width + 1);
-          }).map((el) => el.id || el.className || el.tagName);
-          return { overflow, scrollWidth: document.documentElement.scrollWidth, width };
-        });
-        assert.deepEqual(layout.overflow, []);
-        assert.ok(layout.scrollWidth <= layout.width);
-      }
       await checkLayout();
 
       for (const outcome of ["meguru", "yawaragu", "mezameru", "none"]) {
