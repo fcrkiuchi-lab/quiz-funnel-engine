@@ -6,7 +6,7 @@
   "use strict";
   return {
     "id": "dosha-sample-v1",
-    "title": "ドーシャ傾向セルフチェック",
+    "title": "ドーシャチェック",
     "eyebrow": "設定駆動型診断サンプル",
     "description": "日頃の行動で近いものを選ぶと、ヴァータ・ピッタ・カパの3軸を点数と割合で確認できます。医療上の判断を行うものではありません。",
     "resultTitle": "あなたの3軸スコア",
@@ -158,7 +158,6 @@
     "brand": "Salon de Krishna",
     "resultLayout": "scores",
     "presentation": {
-      "location": "ASHIYA",
       "duration": "約1分"
     }
   };
