@@ -3,11 +3,13 @@
 const assert = require("assert").strict;
 const fs = require("fs");
 const path = require("path");
-const config = require("../diagnosis-template/config.js");
+const config = require("./fixtures/krishna-tea-config.js");
 const workStyleConfig = require("../diagnosis-template/configs/work-style.js");
 const { validateConfig, calculateDiagnosis } = require("../diagnosis-template/engine.js");
 const { resolvePrimaryAxisKey } = require("../diagnosis-template/app.js");
 const { sendResult } = require("../diagnosis-template/integration.js");
+
+require("./dosha-restoration.test.js");
 
 const tests = [];
 

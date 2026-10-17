@@ -1,6 +1,14 @@
 "use strict";
 
 const { test, expect } = require("@playwright/test");
+const path = require("node:path");
+// Retain the tea-version regression suite against its preserved configuration.
+test.beforeEach(async function preserveTeaFixture({ context }) {
+  await context.route("**/diagnosis-template/config.js", route => route.fulfill({
+    path: path.join(__dirname, "fixtures/krishna-tea-config.js"),
+    contentType: "application/javascript"
+  }));
+});
 
 function monitorPage(page) {
   const consoleIssues = [];
@@ -136,10 +144,9 @@ test.beforeEach(async function enableReducedMotion({ page }) {
 test("plays one-shot V2 motion in the base theme only on the start and result screens", async function ({ page }) {
   // Exercise the supported base theme without changing the real config or CSS.
   await page.context().route("**/diagnosis-template/config.js", async function useBaseTheme(route) {
-    const response = await route.fetch();
     await route.fulfill({
-      response: response,
-      body: await response.text() + "\ndelete globalThis.DiagnosisConfig.presentation;\n"
+      contentType: "application/javascript",
+      body: require("node:fs").readFileSync(path.join(__dirname, "fixtures/krishna-tea-config.js"), "utf8") + "\ndelete globalThis.DiagnosisConfig.presentation;\n"
     });
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });

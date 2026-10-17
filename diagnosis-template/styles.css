@@ -788,3 +788,9 @@ tbody td:last-child {
     transform: none;
   }
 }
+
+/* The restored dosha check presents all three scores, not a tea recommendation. */
+#result-screen[data-layout="scores"] .table-wrap,
+#result-screen[data-layout="scores"] .rounding-note {
+  display: block;
+}
