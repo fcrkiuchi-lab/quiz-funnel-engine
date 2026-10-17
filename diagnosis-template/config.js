@@ -8,7 +8,7 @@
     "id": "dosha-sample-v1",
     "title": "Find Your Dosha",
     "eyebrow": "設定駆動型診断サンプル",
-    "description": "４つの簡単な質問で、\nあなたのドーシャ傾向をチェック。\nヴァータ・ピッタ・カパのバランスを見てみましょう。",
+    "description": "7つの簡単な質問で、\nあなたのドーシャ傾向をチェック。\nヴァータ・ピッタ・カパの\nバランスを見てみましょう。",
     "resultTitle": "あなたの3軸スコア",
     "resultDescription": "回答から加点した値と、その合計に占める割合です。分類や体質の断定は行いません。",
     "labels": {
@@ -31,69 +31,72 @@
     "axes": [
       {
         "key": "vata",
+        "color": "#6f7fc0",
         "label": "ヴァータ",
-        "resultText": "変化や軽快さに関する回答で加点される軸です。"
+        "resultText": "風と空の性質をもつドーシャ。軽やかで変化に富み、発想や行動のスピードに表れやすい傾向です。"
       },
       {
         "key": "pitta",
+        "color": "#c8693a",
         "label": "ピッタ",
-        "resultText": "集中や達成に関する回答で加点される軸です。"
+        "resultText": "火と水の性質をもつドーシャ。熱や鋭さをもち、集中力や判断の速さに表れやすい傾向です。"
       },
       {
         "key": "kapha",
+        "color": "#4f8f72",
         "label": "カパ",
-        "resultText": "安定や継続に関する回答で加点される軸です。"
+        "resultText": "水と地の性質をもつドーシャ。重さや安定をもち、穏やかさや持久力に表れやすい傾向です。"
       }
     ],
     "questions": [
       {
         "id": "q1",
-        "prompt": "予定を立てるとき、最も近いものは？",
+        "prompt": "体つきについて、最も近いものは？",
         "choices": [
           {
             "id": "vata",
-            "label": "まず動いてから柔軟に調整する",
-            "scores": {
-              "vata": 2
-            }
-          },
-          {
-            "id": "pitta",
-            "label": "目標と手順を決めて進める",
-            "scores": {
-              "pitta": 2
-            }
-          },
-          {
-            "id": "kapha",
-            "label": "無理なく続けられるペースを選ぶ",
-            "scores": {
-              "kapha": 2
-            }
-          }
-        ]
-      },
-      {
-        "id": "q2",
-        "prompt": "作業中に心地よいのは？",
-        "choices": [
-          {
-            "id": "vata",
-            "label": "新しい刺激や変化があること",
+            "label": "細身で骨ばっていて、太りにくい",
             "scores": {
               "vata": 1
             }
           },
           {
             "id": "pitta",
-            "label": "成果や進み具合が明確なこと",
+            "label": "中肉中背で、筋肉がつきやすい",
             "scores": {
               "pitta": 1
             }
           },
           {
             "id": "kapha",
-            "label": "落ち着いて同じ調子を保てること",
+            "label": "がっしり・ふっくらしていて、太りやすい",
+            "scores": {
+              "kapha": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "prompt": "肌や髪の状態で、最も近いものは？",
+        "choices": [
+          {
+            "id": "vata",
+            "label": "乾燥しやすく、髪もパサつきやすい",
+            "scores": {
+              "vata": 1
+            }
+          },
+          {
+            "id": "pitta",
+            "label": "赤みやほてりが出やすく、皮脂が多め",
+            "scores": {
+              "pitta": 1
+            }
+          },
+          {
+            "id": "kapha",
+            "label": "しっとりしていて、髪は太く豊か",
             "scores": {
               "kapha": 1
             }
@@ -102,25 +105,25 @@
       },
       {
         "id": "q3",
-        "prompt": "休み方として近いものは？",
+        "prompt": "食欲や消化について、最も近いものは？",
         "choices": [
           {
             "id": "vata",
-            "label": "気分に合わせて過ごし方を変える",
+            "label": "食欲にむらがあり、お腹が張りやすい",
             "scores": {
               "vata": 1
             }
           },
           {
             "id": "pitta",
-            "label": "やりたいことを決めて楽しむ",
+            "label": "食欲旺盛で、食事を抜くとイライラする",
             "scores": {
               "pitta": 1
             }
           },
           {
             "id": "kapha",
-            "label": "慣れた場所でゆっくり過ごす",
+            "label": "食欲は安定していて、一食抜いても平気",
             "scores": {
               "kapha": 1
             }
@@ -129,25 +132,106 @@
       },
       {
         "id": "q4",
-        "prompt": "周囲から言われることが多いのは？",
+        "prompt": "眠りについて、最も近いものは？",
         "choices": [
           {
             "id": "vata",
-            "label": "発想が豊かで切り替えが早い",
+            "label": "眠りが浅く、夜中に目が覚めやすい",
             "scores": {
               "vata": 1
             }
           },
           {
             "id": "pitta",
-            "label": "判断が早く熱心に取り組む",
+            "label": "短めでも、深く眠れる",
             "scores": {
               "pitta": 1
             }
           },
           {
             "id": "kapha",
-            "label": "穏やかで粘り強く取り組む",
+            "label": "ぐっすり長く眠り、朝は起きにくい",
+            "scores": {
+              "kapha": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "q5",
+        "prompt": "苦手な気候は？",
+        "choices": [
+          {
+            "id": "vata",
+            "label": "寒さ・乾燥・強い風",
+            "scores": {
+              "vata": 1
+            }
+          },
+          {
+            "id": "pitta",
+            "label": "暑さ・強い日差し",
+            "scores": {
+              "pitta": 1
+            }
+          },
+          {
+            "id": "kapha",
+            "label": "湿気・冷たい雨の日",
+            "scores": {
+              "kapha": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "q6",
+        "prompt": "ストレスを感じたとき、出やすい反応は？",
+        "choices": [
+          {
+            "id": "vata",
+            "label": "不安や心配が増えて、落ち着かなくなる",
+            "scores": {
+              "vata": 1
+            }
+          },
+          {
+            "id": "pitta",
+            "label": "イライラして、つい批判的になる",
+            "scores": {
+              "pitta": 1
+            }
+          },
+          {
+            "id": "kapha",
+            "label": "やる気が出ず、引きこもりがちになる",
+            "scores": {
+              "kapha": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "q7",
+        "prompt": "普段のテンポで、最も近いものは？",
+        "choices": [
+          {
+            "id": "vata",
+            "label": "動きも話し方も速く、気分が変わりやすい",
+            "scores": {
+              "vata": 1
+            }
+          },
+          {
+            "id": "pitta",
+            "label": "目的に向かって効率よく、はっきり話す",
+            "scores": {
+              "pitta": 1
+            }
+          },
+          {
+            "id": "kapha",
+            "label": "ゆったり落ち着いていて、マイペース",
             "scores": {
               "kapha": 1
             }
@@ -158,9 +242,13 @@
     "brand": "Salon de Krishna",
     "resultLayout": "scores",
     "presentation": {
-      "duration": "約1分",
+      "duration": "約2分",
       "subtitle": "あなたのドーシャを見つけてみませんか？",
       "notice": "※医療上の診断を行うものではありません。"
+    },
+    "analytics": {
+      "provider": "cloudflare",
+      "token": ""
     }
   };
 }));

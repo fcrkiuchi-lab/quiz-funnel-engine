@@ -371,3 +371,209 @@
     width: min(67%, 210px);
   }
 }
+
+/* ---- 2026-10 visual fixes ---- */
+
+/* Brand name: separate it from the blue page title. */
+.brand-presentation {
+  --brand-ink: #8a6a3e;
+}
+
+.brand-presentation .brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: clamp(1rem, 4.2vw, 1.2rem);
+  letter-spacing: 0.14em;
+  color: var(--brand-ink);
+}
+
+.brand-presentation .brand::before,
+.brand-presentation .brand::after {
+  width: 28px;
+  height: 1px;
+  background: color-mix(in srgb, var(--brand-ink) 45%, transparent);
+  content: "";
+}
+
+.brand-presentation .start-duration {
+  display: block;
+  margin: 8px 0 0;
+}
+
+/* Programmatic focus after a tap or click should not draw a box; keyboard focus still does. */
+.brand-presentation legend:focus:not(:focus-visible),
+.brand-presentation #result-title:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+.brand-presentation legend:focus-visible,
+.brand-presentation #result-title:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+/* Score result: colored, animated bars instead of a plain table. */
+.brand-presentation #result-screen[data-layout="scores"] #result-title {
+  margin: 4px 0 4px;
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  font-size: clamp(1.4rem, 6vw, 1.8rem);
+  font-weight: 500;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] #result-description {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] table,
+.brand-presentation #result-screen[data-layout="scores"] tbody {
+  display: block;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-row {
+  --axis-color: var(--primary);
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    "label score percent"
+    "bar bar bar";
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0 0 14px;
+  padding: 16px 18px 18px;
+  border: 1px solid color-mix(in srgb, var(--axis-color) 22%, var(--border));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--axis-color) 6%, var(--surface));
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-row.is-leader {
+  border-color: color-mix(in srgb, var(--axis-color) 55%, transparent);
+  background: color-mix(in srgb, var(--axis-color) 12%, var(--surface));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--axis-color) 16%, transparent);
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-row.is-leader::before {
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--axis-color) 72%, #000000);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  content: "いちばん高い傾向";
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-row th,
+.brand-presentation #result-screen[data-layout="scores"] .result-row td {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-row th {
+  grid-area: label;
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-score {
+  grid-area: score;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-score::after {
+  content: "点";
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-percent {
+  grid-area: percent;
+  color: color-mix(in srgb, var(--axis-color) 78%, #000000);
+  font-family: Georgia, "Yu Mincho", serif;
+  font-size: 1.9rem;
+  font-weight: 500;
+  line-height: 1;
+  text-align: right;
+}
+
+/* The bar track and fill live on the row so the cell text stays unchanged. */
+.brand-presentation #result-screen[data-layout="scores"] .result-row::after {
+  grid-area: bar;
+  align-self: stretch;
+  height: 12px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--axis-color) 70%, #ffffff),
+      var(--axis-color)) 0 0 / var(--axis-percent) 100% no-repeat,
+    color-mix(in srgb, var(--axis-color) 12%, #ffffff);
+  content: "";
+  animation: score-bar-grow 900ms 150ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .result-percent::before {
+  display: none;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .axis-text {
+  padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--axis-color, var(--primary));
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .axis-text h3 {
+  margin: 0 0 4px;
+  color: color-mix(in srgb, var(--axis-color, var(--primary)) 78%, #000000);
+  font-size: 1rem;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .axis-text p {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.75;
+}
+
+.brand-presentation #result-screen[data-layout="scores"] .rounding-note {
+  margin-top: 20px;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+@keyframes score-bar-grow {
+  from {
+    background-size: 0% 100%, auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-presentation #result-screen[data-layout="scores"] .result-row::after {
+    animation: none;
+  }
+}

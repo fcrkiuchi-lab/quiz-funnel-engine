@@ -44,13 +44,24 @@ async function expectQuestionFocus(page, prompt) {
   const focusStyle = await legend.evaluate(function readFocusStyle(element) {
     const style = getComputedStyle(element);
     return {
+      focusVisible: element.matches(":focus-visible"),
       outlineColor: style.outlineColor,
       outlineStyle: style.outlineStyle,
       outlineWidth: style.outlineWidth
     };
   });
+  // Pointer-initiated focus moves silently; keyboard users still get a visible ring.
+  if (!focusStyle.focusVisible) {
+    expect(focusStyle.outlineStyle).toBe("none");
+    return;
+  }
   expect(focusStyle.outlineStyle).toBe("solid");
-  expect(parseFloat(focusStyle.outlineWidth)).toBeGreaterThan(0);
+  // The reduced-motion rule keeps a 0.01ms transition, so read the settled width.
+  await expect.poll(function readOutlineWidth() {
+    return legend.evaluate(function width(element) {
+      return parseFloat(getComputedStyle(element).outlineWidth);
+    });
+  }).toBeGreaterThan(0);
   expect(focusStyle.outlineColor).not.toBe("rgba(0, 0, 0, 0)");
 }
 

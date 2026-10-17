@@ -54,8 +54,22 @@
     };
   }
 
+  // Analytics is optional. Only Cloudflare Web Analytics with a plain token is accepted;
+  // an empty or invalid token keeps the page free of external requests and URL changes.
+  function safeAnalytics(analytics) {
+    if (!analytics || analytics.provider !== "cloudflare" ||
+        typeof analytics.token !== "string" || !/^[A-Za-z0-9]{16,64}$/.test(analytics.token)) {
+      return null;
+    }
+    return { provider: "cloudflare", token: analytics.token };
+  }
+
   if (typeof module === "object" && module.exports) {
-    module.exports = { resolvePrimaryAxisKey: resolvePrimaryAxisKey, safeVisual: safeVisual };
+    module.exports = {
+      resolvePrimaryAxisKey: resolvePrimaryAxisKey,
+      safeVisual: safeVisual,
+      safeAnalytics: safeAnalytics
+    };
   }
 
   if (!document) {
@@ -81,7 +95,11 @@
   const progressText = document.getElementById("progress-text");
   const progressBar = document.getElementById("progress-bar");
   const answers = Object.create(null);
+  const analytics = safeAnalytics(config && config.analytics);
+  const basePath = root.location ? root.location.pathname.replace(/[^/]*$/, "") : "/";
   let questionIndex = 0;
+  let restoringHistory = false;
+  let appReady = false;
 
   function appendTextElement(parent, tagName, text, className) {
     const element = document.createElement(tagName);
@@ -199,6 +217,60 @@
     [startScreen, questionScreen, resultScreen].forEach(function hideScreen(currentScreen) {
       currentScreen.hidden = currentScreen !== screen;
     });
+    recordStep(screen);
+  }
+
+  // Each step gets its own path (q1 ... qN, result) so page-view analytics can show drop-off.
+  function stepFor(screen) {
+    if (screen === questionScreen) {
+      return "q" + (questionIndex + 1);
+    }
+    return screen === resultScreen ? "result" : "";
+  }
+
+  function recordStep(screen) {
+    if (!analytics || !appReady || restoringHistory || !root.history) {
+      return;
+    }
+    const step = stepFor(screen);
+    const path = basePath + step;
+    if (root.location.pathname === path) {
+      return;
+    }
+    root.history.pushState({ diagnosisStep: step }, "", path);
+  }
+
+  function loadAnalytics() {
+    if (!analytics) {
+      return;
+    }
+    const beacon = document.createElement("script");
+    beacon.type = "module";
+    beacon.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    beacon.setAttribute("data-cf-beacon", JSON.stringify({ token: analytics.token }));
+    document.head.appendChild(beacon);
+  }
+
+  function restoreStep(step) {
+    restoringHistory = true;
+    try {
+      const match = /^q(\d+)$/.exec(step || "");
+      const allAnswered = config.questions.every(function hasAnswer(question) {
+        return Boolean(answers[question.id]);
+      });
+      if (match && Number(match[1]) >= 1 && Number(match[1]) <= config.questions.length) {
+        questionIndex = Number(match[1]) - 1;
+        renderQuestion();
+      } else if (step === "result" && allAnswered) {
+        renderResult(engine.calculateDiagnosis(config, answers));
+      } else {
+        questionIndex = 0;
+        showScreen(startScreen);
+        startButton.focus();
+      }
+    } finally {
+      restoringHistory = false;
+    }
   }
 
   function applyTheme() {
@@ -288,13 +360,27 @@
       resultScreen.dataset.layout = "scores";
       resultTitle.textContent = config.resultTitle;
       config.axes.forEach(function renderScoreAxis(axis) {
+        const axisColor = /^#[a-fA-F0-9]{6}$/.test(axis.color || "") ? axis.color : null;
         const row = document.createElement("tr");
+        row.className = "result-row";
+        row.dataset.axis = axis.key;
+        if (result.leaders.includes(axis.key)) {
+          row.classList.add("is-leader");
+        }
+        row.style.setProperty("--axis-percent", result.percentages[axis.key] + "%");
+        if (axisColor) {
+          row.style.setProperty("--axis-color", axisColor);
+        }
         appendTextElement(row, "th", axis.label).scope = "row";
-        appendTextElement(row, "td", String(result.scores[axis.key]));
-        appendTextElement(row, "td", result.percentages[axis.key].toFixed(1) + "%");
+        appendTextElement(row, "td", String(result.scores[axis.key]), "result-score");
+        appendTextElement(row, "td", result.percentages[axis.key].toFixed(1) + "%", "result-percent");
         resultRows.appendChild(row);
         const textCard = document.createElement("section");
         textCard.className = "axis-text";
+        textCard.dataset.axis = axis.key;
+        if (axisColor) {
+          textCard.style.setProperty("--axis-color", axisColor);
+        }
         appendTextElement(textCard, "h3", axis.label);
         appendTextElement(textCard, "p", axis.resultText);
         resultTexts.appendChild(textCard);
@@ -397,7 +483,17 @@
     applyTheme();
     renderStart();
     renderPresentation();
+    if (analytics) {
+      if (root.location.pathname !== basePath && root.location.pathname !== basePath + "index.html") {
+        root.history.replaceState({ diagnosisStep: "" }, "", basePath);
+      }
+      root.addEventListener("popstate", function handleHistory(event) {
+        restoreStep(event.state && event.state.diagnosisStep);
+      });
+      loadAnalytics();
+    }
     showScreen(startScreen);
+    appReady = true;
   } catch (error) {
     errorMessage.textContent = error.message;
     errorMessage.hidden = false;

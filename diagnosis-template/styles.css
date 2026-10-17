@@ -414,7 +414,7 @@ button:active:not(:disabled) {
 button:focus-visible,
 .result-cta:focus-visible,
 input:focus-visible,
-legend:focus {
+legend:focus-visible {
   outline: 2px solid #000000;
   outline-offset: 2px;
   box-shadow: 0 0 0 2px #ffffff;
