@@ -140,12 +140,17 @@
     if (hero) {
       startScreen.insertBefore(hero, document.getElementById("page-eyebrow"));
     }
+    if (presentation.subtitle) {
+      const subtitle = appendTextElement(startScreen, "p", presentation.subtitle, "start-subtitle");
+      startScreen.insertBefore(subtitle, document.getElementById("page-description"));
+    }
     appendTextElement(document.getElementById("page-description"), "span",
       "全" + config.questions.length + "問" + (presentation.duration ? "・" + presentation.duration : ""), "start-duration");
     const arrow = appendTextElement(startButton, "span", "›", "start-arrow");
     arrow.setAttribute("aria-hidden", "true");
     if (presentation.notice) {
-      appendTextElement(startScreen, "p", presentation.notice, "start-notice");
+      const notice = appendTextElement(startScreen, "p", presentation.notice, "start-notice");
+      startScreen.insertBefore(notice, startButton);
     }
   }
 
