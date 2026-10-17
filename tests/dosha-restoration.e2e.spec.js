@@ -21,8 +21,8 @@ for (const width of [320, 375, 390, 1280]) {
     page.on("pageerror", error => errors.push(error.message));
     await page.setViewportSize({ width, height: 900 });
     await page.goto("./");
-    await expect(page).toHaveTitle("ドーシャチェック");
-    await expect(page.locator("#page-description")).toContainText("ヴァータ・ピッタ・カパ");
+    await expect(page).toHaveTitle("Find Your Dosha");
+    await expect(page.locator("#page-description")).toContainText("あなたのドーシャを見つけてみませんか？");
     await expect(page.locator("#start-brand")).toContainText("Salon de Krishna");
     await expect(page.locator(".start-visual, .product-details, .result-cta")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText("紅茶");
@@ -91,7 +91,7 @@ test("ties retain all three score rows and keyboard-only answering works", async
 
 test("template entry point uses the same restored questions", async ({ page }) => {
   await page.goto("./diagnosis-template/");
-  await expect(page).toHaveTitle("ドーシャチェック");
+  await expect(page).toHaveTitle("Find Your Dosha");
   await answer(page, ["kapha", "kapha", "kapha", "kapha"]);
   await expect(page.locator("#result-rows tr").nth(2)).toHaveText("カパ5100.0%");
 });
