@@ -7,7 +7,7 @@ const config = require("../diagnosis-template/config.js");
 const evidenceDir = process.env.DOSHA_EVIDENCE_DIR || path.resolve(__dirname, "../test-results/dosha-restoration");
 
 async function answer(page, keys) {
-  await page.getByRole("button", { name: "診断をはじめる", exact: true }).click();
+  await page.getByRole("button", { name: "チェックする", exact: true }).click();
   for (let i = 0; i < keys.length; i += 1) {
     await expect(page.locator("#progress-text")).toHaveText(`質問 ${i + 1} / 4`);
     await page.locator(`input[value="${keys[i]}"]`).check();
@@ -22,7 +22,7 @@ for (const width of [320, 375, 390, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("./");
     await expect(page).toHaveTitle("Find Your Dosha");
-    await expect(page.locator("#page-description")).toContainText("あなたのドーシャを見つけてみませんか？");
+    await expect(page.locator(".start-subtitle")).toHaveText("あなたのドーシャを見つけてみませんか？");
     await expect(page.locator("#start-brand")).toContainText("Salon de Krishna");
     await expect(page.locator(".start-visual, .product-details, .result-cta")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText("紅茶");
@@ -30,7 +30,7 @@ for (const width of [320, 375, 390, 1280]) {
     if (width === 375 || width === 1280) {
       await page.screenshot({ path: path.join(evidenceDir, `start-${width}.png`), fullPage: true, animations: "disabled" });
     }
-    await page.getByRole("button", { name: "診断をはじめる", exact: true }).click();
+    await page.getByRole("button", { name: "チェックする", exact: true }).click();
     await expect(page.locator("#question-title")).toHaveText(config.questions[0].prompt);
     await page.locator("#next-button").click();
     await expect(page.locator("#form-error")).toBeVisible();
