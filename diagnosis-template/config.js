@@ -6,9 +6,9 @@
   "use strict";
   return {
     "id": "dosha-sample-v1",
-    "title": "ドーシャチェック",
+    "title": "Find Your Dosha",
     "eyebrow": "設定駆動型診断サンプル",
-    "description": "日頃の行動で近いものを選ぶと、ヴァータ・ピッタ・カパの3軸を点数と割合で確認できます。医療上の判断を行うものではありません。",
+    "description": "あなたのドーシャを見つけてみませんか？",
     "resultTitle": "あなたの3軸スコア",
     "resultDescription": "回答から加点した値と、その合計に占める割合です。分類や体質の断定は行いません。",
     "labels": {
