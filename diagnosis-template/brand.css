@@ -109,6 +109,14 @@
   font-size: clamp(1.65rem, 6.7vw, 2.3rem);
 }
 
+.brand-presentation .start-subtitle {
+  margin: 12px auto 0;
+  font-size: clamp(0.75rem, 3.3vw, 1rem);
+  line-height: 1.8;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
 .brand-presentation #page-description {
   max-width: 30em;
   margin: 12px auto 0;
@@ -116,6 +124,7 @@
   line-height: 1.8;
   color: var(--text);
   text-wrap: wrap;
+  white-space: pre-line;
 }
 
 .brand-presentation .start-duration {
@@ -139,7 +148,8 @@
 }
 
 .brand-presentation #start-button {
-  max-width: none;
+  width: auto;
+  max-width: 100%;
   margin-top: 24px;
   padding-inline: 44px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 94%, white), var(--primary));
