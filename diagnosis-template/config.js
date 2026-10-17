@@ -8,11 +8,11 @@
     "id": "dosha-sample-v1",
     "title": "Find Your Dosha",
     "eyebrow": "設定駆動型診断サンプル",
-    "description": "あなたのドーシャを見つけてみませんか？ 日頃の行動で近いものを選ぶと、ヴァータ・ピッタ・カパの3軸を点数と割合で確認できます。医療上の判断を行うものではありません。",
+    "description": "４つの簡単な質問で、\nあなたのドーシャ傾向をチェック。\nヴァータ・ピッタ・カパのバランスを見てみましょう。",
     "resultTitle": "あなたの3軸スコア",
     "resultDescription": "回答から加点した値と、その合計に占める割合です。分類や体質の断定は行いません。",
     "labels": {
-      "start": "診断をはじめる",
+      "start": "チェックする",
       "next": "次の質問へ",
       "previous": "前の質問へ",
       "finish": "結果を見る",
@@ -158,7 +158,9 @@
     "brand": "Salon de Krishna",
     "resultLayout": "scores",
     "presentation": {
-      "duration": "約1分"
+      "duration": "約1分",
+      "subtitle": "あなたのドーシャを見つけてみませんか？",
+      "notice": "※医療上の診断を行うものではありません。"
     }
   };
 }));
