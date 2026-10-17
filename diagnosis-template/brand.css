@@ -577,3 +577,31 @@
     animation: none;
   }
 }
+
+/* Guidance for respondents who cannot decide. */
+.answer-hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.brand-presentation .start-hint {
+  margin: 16px 0 0;
+}
+
+.brand-presentation .question-hint {
+  margin: -4px 0 14px;
+}
+
+/* The neutral choice stays available but visually secondary. */
+.brand-presentation .choice:has(input[value="none"]) {
+  padding-block: 12px;
+  border-style: dashed;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.brand-presentation [data-outcome="neutral"] #result-description {
+  display: none;
+}

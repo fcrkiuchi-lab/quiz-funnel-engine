@@ -11,34 +11,44 @@ assert.equal(config.questions.length, 7);
 assert.deepEqual(config.axes.map(axis => axis.key), ["vata", "pitta", "kapha"]);
 assert.deepEqual(config.axes.map(axis => axis.label), ["ヴァータ", "ピッタ", "カパ"]);
 // Pin the reviewed dosha question set; update this hash only with an approved question change.
-assert.equal(crypto.createHash("sha256").update(JSON.stringify(config.questions)).digest("hex"), "b3ce8bc12495fe165fba9afaeac47f8554f632e0c96538c11d297b852d73a680");
-assert.ok(config.questions.every(question => question.choices.length === 3 &&
-  question.choices.every(choice => Object.keys(choice.scores).length === 1 && choice.scores[choice.id] === 1)));
+assert.equal(crypto.createHash("sha256").update(JSON.stringify(config.questions)).digest("hex"), "6599eff04f8780fc343b6834d90f56ab124a7cd74b2963d8a6b0b9873d805045");
+assert.ok(config.questions.every(question => question.choices.length === 4 &&
+  question.choices.slice(0, 3).every(choice => Object.keys(choice.scores).length === 1 && choice.scores[choice.id] === 1) &&
+  question.choices[3].id === "none" && Object.values(question.choices[3].scores).every(score => score === 0)));
+assert.equal(config.answerHint, "迷ったら、ここ数年でいちばん多かった状態を選んでください。");
 assert.ok(config.axes.every(axis => !axis.product && !axis.cta && !axis.visual));
 assert.equal(config.presentation.startImage, undefined);
 assert.equal(config.commonConcept, undefined);
 assert.equal(config.tieBreakerQuestionId, undefined);
 const keys = ["vata", "pitta", "kapha"];
 const count = config.questions.length;
-for (let variant = 0; variant < 3 ** count; variant += 1) {
+const choiceKeys = keys.concat("none");
+for (let variant = 0; variant < 4 ** count; variant += 1) {
   let remaining = variant;
   const answers = {};
   const scores = {vata: 0, pitta: 0, kapha: 0};
   for (let i = 0; i < count; i += 1) {
-    const key = keys[remaining % 3];
-    remaining = Math.floor(remaining / 3);
+    const key = choiceKeys[remaining % 4];
+    remaining = Math.floor(remaining / 4);
     answers["q" + (i + 1)] = key;
-    scores[key] += 1;
+    if (key !== "none") scores[key] += 1;
   }
   const result = engine.calculateDiagnosis(config, answers);
+  const total = scores.vata + scores.pitta + scores.kapha;
   assert.deepEqual(result.scores, scores);
-  assert.deepEqual(result.percentages, Object.fromEntries(keys.map(key => [key, Number((scores[key] / count * 100).toFixed(1))])));
+  if (total === 0) {
+    assert.equal(result.outcome, "neutral");
+    assert.equal(result.percentages, null);
+    assert.deepEqual(result.leaders, []);
+    continue;
+  }
+  assert.deepEqual(result.percentages, Object.fromEntries(keys.map(key => [key, Number((scores[key] / total * 100).toFixed(1))])));
   assert.deepEqual(result.leaders, keys.filter(key => scores[key] === Math.max(...Object.values(scores))));
   assert.equal(result.answeredQuestionCount, count);
 }
 assert.throws(() => engine.calculateDiagnosis(config, {q1: "vata"}));
-assert.throws(() => engine.calculateDiagnosis(config, Object.fromEntries(config.questions.map(q => [q.id, q.id === "q7" ? "none" : "vata"]))));
-console.log("PASS dosha check: pinned question hash, all " + 3 ** count + " scoring combinations, ties and invalid answers");
+assert.throws(() => engine.calculateDiagnosis(config, Object.fromEntries(config.questions.map(q => [q.id, q.id === "q7" ? "invalid" : "vata"]))));
+console.log("PASS dosha check: pinned question hash, all " + 4 ** count + " scoring combinations, ties and invalid answers");
 
 // Analytics stays off unless a Cloudflare token is set.
 assert.equal(config.analytics.provider, "cloudflare");

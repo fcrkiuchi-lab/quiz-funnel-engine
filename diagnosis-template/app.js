@@ -296,6 +296,15 @@
     const resultDescription = document.getElementById("result-description");
     resultDescription.textContent = config.resultDescription;
     resultDescription.hidden = !config.resultDescription || config.hideResultDescription;
+    if (answerHint()) {
+      const startHint = appendTextElement(startScreen, "p", answerHint(), "answer-hint start-hint");
+      startScreen.insertBefore(startHint, startButton);
+    }
+  }
+
+  // Optional one-line guidance for respondents who cannot decide between choices.
+  function answerHint() {
+    return typeof config.answerHint === "string" ? config.answerHint.trim() : "";
   }
 
   function renderQuestion() {
@@ -308,6 +317,9 @@
     legend.tabIndex = -1;
     legend.textContent = question.prompt;
     questionFieldset.appendChild(legend);
+    if (answerHint()) {
+      appendTextElement(questionFieldset, "p", answerHint(), "answer-hint question-hint");
+    }
 
     question.choices.forEach(function renderChoice(choice) {
       const label = document.createElement("label");
@@ -340,6 +352,7 @@
     delete resultScreen.dataset.axis;
     restartButton.classList.remove("secondary-button");
     if (result.outcome === "neutral") {
+      delete resultScreen.dataset.layout;
       const neutral = config.neutralResult || {
         title: "今回は判定を保留します",
         body: ["今回の回答だけでは、特定の結果をおすすめする材料がありません。無理にタイプを決める必要はありません。"]

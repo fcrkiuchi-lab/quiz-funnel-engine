@@ -151,3 +151,34 @@ test("with a token, each step gets its own path and Back restores the previous s
   await expect(page.locator("#start-screen")).toBeVisible();
   expect(beacons.length).toBeGreaterThan(0);
 });
+
+test("undecided respondents get a hint and a neutral choice", async ({ page }) => {
+  await page.goto("./");
+  await expect(page.locator(".start-hint")).toHaveText(config.answerHint);
+  await page.getByRole("button", { name: "チェックする", exact: true }).click();
+  await expect(page.locator(".question-hint")).toHaveText(config.answerHint);
+  await expect(page.locator(".choice")).toHaveCount(4);
+  await expect(page.locator(".choice").nth(3)).toHaveText("どれも当てはまらない");
+  // Neutral answers add nothing; the rest are scored against the answered total.
+  const keys = ["none", "none", "vata", "vata", "pitta", "none", "kapha"];
+  for (const key of keys) {
+    await page.locator(`input[value="${key}"]`).check();
+    await page.locator("#next-button").click();
+  }
+  await expect(page.locator("#result-rows tr").nth(0)).toHaveText("ヴァータ250.0%");
+  await expect(page.locator("#result-rows tr").nth(1)).toHaveText("ピッタ125.0%");
+  await expect(page.locator("#result-rows tr").nth(2)).toHaveText("カパ125.0%");
+  await page.locator("#restart-button").click();
+  await answer(page, Array(config.questions.length).fill("none"));
+  await expect(page.locator("#result-title")).toHaveText(config.neutralResult.title);
+  await expect(page.locator("#result-texts")).toContainText(config.neutralResult.body[0]);
+  await expect(page.locator(".table-wrap")).toBeHidden();
+  await expect(page.locator(".rounding-note")).toBeHidden();
+  await expect(page.locator("#result-description")).toBeHidden();
+  await expectNoOverflow(page);
+});
+
+async function expectNoOverflow(page) {
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(overflow).toBe(false);
+}
