@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const config = require("../diagnosis-template/config.js");
 const engine = require("../diagnosis-template/engine.js");
 engine.validateConfig(config);
-assert.equal(config.title, "ドーシャチェック");
+assert.equal(config.title, "Find Your Dosha");
 assert.equal(config.resultLayout, "scores");
 assert.equal(config.questions.length, 4);
 assert.deepEqual(config.axes.map(axis => axis.key), ["vata", "pitta", "kapha"]);
