@@ -4,7 +4,7 @@ const { test, expect } = require("@playwright/test");
 const path = require("node:path");
 // Retain the tea-version regression suite against its preserved configuration.
 test.beforeEach(async function preserveTeaFixture({ context }) {
-  await context.route("**/diagnosis-template/config.js", route => route.fulfill({
+  await context.route(/\/diagnosis-template\/config\.js(?:\?.*)?$/, route => route.fulfill({
     path: path.join(__dirname, "fixtures/krishna-tea-config.js"),
     contentType: "application/javascript"
   }));
@@ -143,7 +143,7 @@ test.beforeEach(async function enableReducedMotion({ page }) {
 
 test("plays one-shot V2 motion in the base theme only on the start and result screens", async function ({ page }) {
   // Exercise the supported base theme without changing the real config or CSS.
-  await page.context().route("**/diagnosis-template/config.js", async function useBaseTheme(route) {
+  await page.context().route(/\/diagnosis-template\/config\.js(?:\?.*)?$/, async function useBaseTheme(route) {
     await route.fulfill({
       contentType: "application/javascript",
       body: require("node:fs").readFileSync(path.join(__dirname, "fixtures/krishna-tea-config.js"), "utf8") + "\ndelete globalThis.DiagnosisConfig.presentation;\n"
@@ -350,7 +350,7 @@ test("reserved question IDs retain answers and score correctly", async function 
     ]
   };
 
-  await page.route("**/diagnosis-template/config.js", function replaceConfig(route) {
+  await page.route(/\/diagnosis-template\/config\.js(?:\?.*)?$/, function replaceConfig(route) {
     return route.fulfill({
       contentType: "text/javascript; charset=utf-8",
       body: "globalThis.DiagnosisConfig = " + JSON.stringify(reservedConfig) + ";"
