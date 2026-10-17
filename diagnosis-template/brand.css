@@ -605,3 +605,62 @@
 .brand-presentation [data-outcome="neutral"] #result-description {
   display: none;
 }
+
+/* Start screen: fewer text blocks, clearer hierarchy. */
+.brand-presentation #page-description {
+  font-size: 1.05rem;
+}
+
+.brand-presentation .start-duration {
+  display: block;
+  width: fit-content;
+  margin: 14px auto 0;
+  padding: 3px 14px;
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  color: var(--primary);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.brand-presentation .start-axes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.brand-presentation .start-axis {
+  --axis-color: var(--primary);
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--axis-color) 40%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--axis-color) 10%, var(--surface));
+  color: color-mix(in srgb, var(--axis-color) 78%, #000000);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.brand-presentation .start-axis::before {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--axis-color);
+  vertical-align: 1px;
+  content: "";
+}
+
+.brand-presentation #start-button {
+  margin-top: 28px;
+}
+
+.brand-presentation #start-button + .start-notice {
+  margin-top: 14px;
+  font-size: 0.75rem;
+}

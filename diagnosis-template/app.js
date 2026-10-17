@@ -162,13 +162,27 @@
       const subtitle = appendTextElement(startScreen, "p", presentation.subtitle, "start-subtitle");
       startScreen.insertBefore(subtitle, document.getElementById("page-description"));
     }
-    appendTextElement(document.getElementById("page-description"), "span",
+    const description = document.getElementById("page-description");
+    appendTextElement(description, "span",
       "全" + config.questions.length + "問" + (presentation.duration ? "・" + presentation.duration : ""), "start-duration");
+    if (presentation.showAxes) {
+      // Preview the result axes as colored chips instead of a sentence listing them.
+      const axisList = document.createElement("ul");
+      axisList.className = "start-axes";
+      axisList.setAttribute("aria-label", "チェックする項目");
+      config.axes.forEach(function renderAxisChip(axis) {
+        const chip = appendTextElement(axisList, "li", axis.label, "start-axis");
+        if (/^#[a-fA-F0-9]{6}$/.test(axis.color || "")) {
+          chip.style.setProperty("--axis-color", axis.color);
+        }
+      });
+      description.after(axisList);
+    }
     const arrow = appendTextElement(startButton, "span", "›", "start-arrow");
     arrow.setAttribute("aria-hidden", "true");
     if (presentation.notice) {
       const notice = appendTextElement(startScreen, "p", presentation.notice, "start-notice");
-      startScreen.insertBefore(notice, startButton);
+      startButton.after(notice);
     }
   }
 
@@ -296,10 +310,6 @@
     const resultDescription = document.getElementById("result-description");
     resultDescription.textContent = config.resultDescription;
     resultDescription.hidden = !config.resultDescription || config.hideResultDescription;
-    if (answerHint()) {
-      const startHint = appendTextElement(startScreen, "p", answerHint(), "answer-hint start-hint");
-      startScreen.insertBefore(startHint, startButton);
-    }
   }
 
   // Optional one-line guidance for respondents who cannot decide between choices.

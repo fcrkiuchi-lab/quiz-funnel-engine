@@ -8,7 +8,7 @@
     "id": "dosha-sample-v1",
     "title": "Find Your Dosha",
     "eyebrow": "設定駆動型診断サンプル",
-    "description": "7つの簡単な質問で、\nあなたのドーシャ傾向をチェック。\nヴァータ・ピッタ・カパの\nバランスを見てみましょう。",
+    "description": "7つの簡単な質問で、\nあなたのドーシャ傾向をチェック。",
     "resultTitle": "あなたの3軸スコア",
     "resultDescription": "回答から加点した値と、その合計に占める割合です。分類や体質の断定は行いません。",
     "labels": {
@@ -292,6 +292,7 @@
     "resultLayout": "scores",
     "presentation": {
       "duration": "約2分",
+      "showAxes": true,
       "subtitle": "あなたのドーシャを見つけてみませんか？",
       "notice": "※医療上の診断を行うものではありません。"
     },

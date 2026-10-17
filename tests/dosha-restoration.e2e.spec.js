@@ -154,7 +154,15 @@ test("with a token, each step gets its own path and Back restores the previous s
 
 test("undecided respondents get a hint and a neutral choice", async ({ page }) => {
   await page.goto("./");
-  await expect(page.locator(".start-hint")).toHaveText(config.answerHint);
+  await expect(page.locator(".start-hint")).toHaveCount(0);
+  await expect(page.locator(".start-axis")).toHaveText(["ヴァータ", "ピッタ", "カパ"]);
+  // Primary action comes before the notice so it stays near the top.
+  const order = await page.evaluate(() => {
+    const button = document.getElementById("start-button");
+    const notice = document.querySelector(".start-notice");
+    return button.compareDocumentPosition(notice) & Node.DOCUMENT_POSITION_FOLLOWING;
+  });
+  expect(order).toBeTruthy();
   await page.getByRole("button", { name: "チェックする", exact: true }).click();
   await expect(page.locator(".question-hint")).toHaveText(config.answerHint);
   await expect(page.locator(".choice")).toHaveCount(4);
